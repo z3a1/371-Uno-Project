@@ -1,12 +1,15 @@
 import socket
-from threading import Thread
+from threading import Thread, Lock
 import threading
+import time
 
 HOST = '127.0.0.1'
 PORT = 53333 
 
 clients = []
 client_num =0
+lock = Lock()
+turn = 1
 
 def broadcast_message(message):
     for client in clients:
@@ -15,22 +18,61 @@ def broadcast_message(message):
         client_socket.sendall(message.encode())
 
 def handle_client(conn, addr, client):
+    global turn
     client_num = client['client_num']
     client_socket = client['client_socket']
-    while True:
-        message = client_socket.recv(1024).decode() #can replace with conn
-
-        if(message == "1"):
-            broadcast_message("Player "+ str(client_num) + " has used 1\n")
-          
-        elif(message == "2"):
-            broadcast_message("Player "+ str(client_num) + " has used 2\n")
     
-        #send to the other clients (update them)
-        else:
-            broadcast_message("Player "+ str(client_num) + " did not take an action")
+    # if the player makes a valid action - changes to one to indicate to change who's turn it is
+    turn_taken = 0
+    
+    while True:
+             
+        ## find a way for this to only be done initially???
+        with lock:
+            ## only starts when we have enough people
+            if len(clients) < 2:
+                print(len(clients))
+                client_socket.sendall("Waiting for more players to connect...\n".encode())
+                time.sleep(1)
+                continue
+            else:
+                broadcast_message(f"All players connected! Player {turn}'s turn.\n")
+                time.sleep(1)
         
-    conn.close()
+        message = client_socket.recv(1024).decode() #can replace with conn
+        
+        with lock:
+            
+            if turn != client_num:
+                ## sents a message only to that socket if it is not their turn
+                client_socket.sendall("It's not your turn!\n".encode())
+                time.sleep(1)
+                continue
+                
+            ## if it is the turn of the correct player
+            if turn == client_num:
+                if(message == "1"):
+                    turn_taken = 1
+                    broadcast_message("Player "+ str(client_num) + " has used 1\n")
+                        
+                elif(message == "2"):
+                    turn_taken = 1
+                    broadcast_message("Player "+ str(client_num) + " has used 2\n")
+                    
+                #send to the other clients (update them)
+                else:
+                    broadcast_message("Player "+ str(client_num) + " did not take an action")
+                        
+        if turn_taken == 1:
+            
+            if turn == len(clients):
+                turn = 1
+            else:
+                turn = turn + 1
+            broadcast_message(f"It is now Player {turn}'s turn\n")
+
+                
+    # conn.close()
 
 def listen(s):
     global client_num
