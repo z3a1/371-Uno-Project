@@ -31,8 +31,10 @@ def handle_client(conn, addr, client):
         with lock:
             ## only starts when we have enough people
             if len(clients) < 2:
-                print(len(clients))
-                client_socket.sendall("Waiting for more players to connect...\n".encode())
+                # print(len(clients))
+                # client_socket.sendall("Waiting for more players to connect...\n".encode())
+                message = client_socket.recv(1024).decode() #can replace with conn
+                print(message)
                 time.sleep(1)
                 continue
             else:
