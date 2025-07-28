@@ -12,12 +12,28 @@ clients = []
 client_num =0
 lock = Lock()
 currGame = GameState()
+#start = 1 if game has started
+start = 0
 
 def broadcast_message(message):
     for client in clients:
         client_socket = client['client_socket']
         
         client_socket.sendall(message.encode())
+
+def check_start_conditions(client, client_socket, start):
+    if len(clients) < 2:
+        print(len(clients))
+        client_socket.sendall("Waiting for more players to connect...\n".encode())
+        time.sleep(1)
+    else:
+        broadcast_message("Press start to begin game!")
+        ##if users want a game with 2 or 3 players must press start
+        if start == 1 or client_num == 4:
+            broadcast_message(f"All players connected! Player {turn}'s turn.\n")
+            time.sleep(1)
+            start = 1
+    return start
 
 def handle_client(conn, addr, client):
     global turn
@@ -33,22 +49,25 @@ def handle_client(conn, addr, client):
         ## find a way for this to only be done initially???
         with lock:
             ## only starts when we have enough people
-            if len(clients) < 2:
-                # print(len(clients))
-                # client_socket.sendall("Waiting for more players to connect...\n".encode())
-                message = client_socket.recv(1024).decode() #can replace with conn
-                print(message)
-                print(client_num)
-                print(currGame.players)
-                print(currGame.numOfPlayers)
-                res = {"playerNum": currGame.players[0].playerNum , "cards": currGame.players[0].cards}
-                resEncode = pickle.dumps(res)
-                client_socket.sendall(resEncode)
-                time.sleep(1)
-                continue
-            else:
-                broadcast_message(f"All players connected! Player {currGame.turns}'s turn.\n")
-                time.sleep(1)
+            if start == 0:
+                if len(clients) < 2:
+                    # print(len(clients))
+                    # client_socket.sendall("Waiting for more players to connect...\n".encode())
+                    message = client_socket.recv(1024).decode() #can replace with conn
+                    print(message)
+                    print(client_num)
+                    print(currGame.players)
+                    print(currGame.numOfPlayers)
+                    res = {"playerNum": currGame.players[0].playerNum , "cards": currGame.players[0].cards}
+                    resEncode = pickle.dumps(res)
+                    client_socket.sendall(resEncode)
+                    time.sleep(1)
+                    continue
+                else:
+                    broadcast_message("Press start to begin game!")
+                    if start == 1:
+                        broadcast_message(f"All players connected! Player {currGame.turns}'s turn.\n")
+                        time.sleep(1)
         
         message = client_socket.recv(1024).decode() #can replace with conn
         
