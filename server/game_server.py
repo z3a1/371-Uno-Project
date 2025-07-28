@@ -2,6 +2,8 @@ import socket
 from threading import Thread, Lock
 import threading
 import time
+import pickle
+from gameState import GameState
 
 HOST = '127.0.0.1'
 PORT = 53333 
@@ -9,7 +11,7 @@ PORT = 53333
 clients = []
 client_num =0
 lock = Lock()
-turn = 1
+currGame = GameState()
 
 def broadcast_message(message):
     for client in clients:
@@ -19,11 +21,12 @@ def broadcast_message(message):
 
 def handle_client(conn, addr, client):
     global turn
+    global currGame
     client_num = client['client_num']
     client_socket = client['client_socket']
     
     # if the player makes a valid action - changes to one to indicate to change who's turn it is
-    turn_taken = 0
+    # turn_taken = 0
     
     while True:
              
@@ -35,10 +38,16 @@ def handle_client(conn, addr, client):
                 # client_socket.sendall("Waiting for more players to connect...\n".encode())
                 message = client_socket.recv(1024).decode() #can replace with conn
                 print(message)
+                print(client_num)
+                print(currGame.players)
+                print(currGame.numOfPlayers)
+                res = {"playerNum": currGame.players[0].playerNum , "cards": currGame.players[0].cards}
+                resEncode = pickle.dumps(res)
+                client_socket.sendall(resEncode)
                 time.sleep(1)
                 continue
             else:
-                broadcast_message(f"All players connected! Player {turn}'s turn.\n")
+                broadcast_message(f"All players connected! Player {currGame.turns}'s turn.\n")
                 time.sleep(1)
         
         message = client_socket.recv(1024).decode() #can replace with conn
@@ -91,6 +100,8 @@ def listen(s):
         # conn.sendall(b'back at you TCP')
 
         client_num += 1
+        currGame.numOfPlayers += 1
+        currGame.addNewPlayer()
         client = {'client_num': client_num,'client_socket': conn}
         clients.append(client)
  

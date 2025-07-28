@@ -3,9 +3,12 @@ from tkinter import ttk
 from tkinter import messagebox
 import socket
 from threading import Thread
+import pickle
 
 HOST = '127.0.0.1'
 PORT = 53333
+global onConnect
+onConnect = False
 
 def receive_data(s):
     while True:
@@ -24,7 +27,7 @@ class GUI:
 
         self.timer = 10
         self.isPauseTimer = False
-        
+
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((HOST,PORT))
 
@@ -52,6 +55,8 @@ class GUI:
         #Init Timer
         self.root.after(1000,self.updateTimer)
 
+
+
         # Run the application
         self.root.mainloop()
     
@@ -62,13 +67,23 @@ class GUI:
 
     def sendMessageToServer(self):
         payload = self.message.get()
-        Thread(target=receive_data, args=(self.socket,)).start()
+        Thread(target=self.checkRecv, args=()).start()
         self.socket.sendall(payload.encode())
+
+    
+    def checkRecv(self):
+        while True:
+            res = pickle.loads(self.socket.recv(65535))
+            if res:
+                print(res)
+                givenCards = res['cards']
+                for card in givenCards:
+                    print(f"{card.val} , {card.color} , {card.type}")
 
     
     def updateTimer(self):
 
-        if self.timer > -1 and self.pause != True:
+        if self.timer > -1 and self.isPauseTimer != True:
             print("Going Down")
             self.timer -= 1
             self.timerStrContainer.set(str(self.timer))
@@ -77,7 +92,7 @@ class GUI:
             messagebox.showerror("UH OH", "TIMES UPPPP!")
             self.timer = 10
             self.root.after(1000,self.updateTimer)
-        elif self.pause and self.timer > -1:
+        elif self.isPauseTimer and self.timer > -1:
             messagebox.showinfo("PAUSED","PAUSED TIMER")
 
 

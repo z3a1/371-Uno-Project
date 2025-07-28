@@ -8,7 +8,8 @@ class Card:
 
 # The turn variable is to be initally set to false
 class Player:
-    def __init__(self, cards):
+    def __init__(self, cards, playerNum = 0):
+        self.playerNum = playerNum
         self.cards = cards
         self.turn = False
 

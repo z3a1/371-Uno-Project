@@ -2,13 +2,13 @@ from entities import *
 from random import randint,seed
 
 class GameState:
-    def __init__(self, numOfPlayers):
+    def __init__(self, numOfPlayers = 0):
         self.numOfPlayers = numOfPlayers
         self.players = []
         self.colors = ['red','green','blue','yellow']
-
-        for i in range(self.numOfPlayers):
-            self.players.append(Player(self.initializeDeck()))
+        self.turns = 1
+        self.isGameOver = False
+        self.currTurn = 0
 
     def initializeDeck(self):
         seed()
@@ -21,3 +21,6 @@ class GameState:
             deck.append(Card(self.colors[colorIdx],None,cardVal))
         
         return deck
+
+    def addNewPlayer(self):
+        self.players.append(Player(self.initializeDeck()))
