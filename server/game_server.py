@@ -12,8 +12,7 @@ clients = []
 client_num =0
 lock = Lock()
 currGame = GameState()
-#start = 1 if game has started
-start = 0
+start = 0 ## = 1 if game as started 
 
 def broadcast_message(message):
     for client in clients:
@@ -21,8 +20,8 @@ def broadcast_message(message):
         
         client_socket.sendall(message.encode())
 
-def check_start_conditions(client, client_socket, start):
-    if len(clients) < 2:
+def check_start_conditions(client_socket, start, turn):
+    if len(clients) < 4 | start == 0:
         print(len(clients))
         client_socket.sendall("Waiting for more players to connect...\n".encode())
         time.sleep(1)
@@ -36,42 +35,32 @@ def check_start_conditions(client, client_socket, start):
     return start
 
 def handle_client(conn, addr, client):
-    global turn
     global currGame
+    global start
     client_num = client['client_num']
     client_socket = client['client_socket']
+    
+    turn = currGame.turns
+    turn_taken = False # if the player makes a valid action - changes to one to indicate to change who's turn it is
     
     # if the player makes a valid action - changes to one to indicate to change who's turn it is
     # turn_taken = 0
     
     while True:
+        message = client_socket.recv(1024).decode() #can replace with conn
+        ## here for now
+        if (message == 'start game'):
+            start = 1
              
         ## find a way for this to only be done initially???
         with lock:
             ## only starts when we have enough people
-            if start == 0:
-                if len(clients) < 2:
-                    # print(len(clients))
-                    # client_socket.sendall("Waiting for more players to connect...\n".encode())
-                    message = client_socket.recv(1024).decode() #can replace with conn
-                    print(message)
-                    print(client_num)
-                    print(currGame.players)
-                    print(currGame.numOfPlayers)
-                    res = {"playerNum": currGame.players[0].playerNum , "cards": currGame.players[0].cards}
-                    resEncode = pickle.dumps(res)
-                    client_socket.sendall(resEncode)
-                    time.sleep(1)
-                    continue
-                else:
-                    broadcast_message("Press start to begin game!")
-                    if start == 1:
-                        broadcast_message(f"All players connected! Player {currGame.turns}'s turn.\n")
-                        time.sleep(1)
-        
-        message = client_socket.recv(1024).decode() #can replace with conn
+            start = check_start_conditions(client_socket, start, turn)
         
         with lock:
+            ## for when uno calling is possible  - or have it open all the time
+            # if one person has one card:
+            #     anyone can press the uno button but only the uno button
             
             if turn != client_num:
                 ## sents a message only to that socket if it is not their turn
@@ -82,24 +71,26 @@ def handle_client(conn, addr, client):
             ## if it is the turn of the correct player
             if turn == client_num:
                 if(message == "1"):
-                    turn_taken = 1
+                    turn_taken = True
                     broadcast_message("Player "+ str(client_num) + " has used 1\n")
                         
                 elif(message == "2"):
-                    turn_taken = 1
+                    turn_taken = True
                     broadcast_message("Player "+ str(client_num) + " has used 2\n")
                     
                 #send to the other clients (update them)
                 else:
                     broadcast_message("Player "+ str(client_num) + " did not take an action")
                         
-        if turn_taken == 1:
+        if turn_taken == True:
             
             if turn == len(clients):
                 turn = 1
             else:
                 turn = turn + 1
             broadcast_message(f"It is now Player {turn}'s turn\n")
+            # reset turn taken
+            turn_taken = False 
 
                 
     # conn.close()
