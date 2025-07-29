@@ -45,55 +45,60 @@ def handle_client(conn, addr, client):
     turn_taken = 0 
     
     while True:
-        
+        # try:
         message = client_socket.recv(1024).decode() #can replace with conn
-        ## here for now
+            ## here for now
         if (message == 'start game'):
             start = 1
+        # except KeyboardInterrupt:
+        #     start = 0
+        #     broadcast_message(f"A player disconnected\n")
              
         ## find a way for this to only be done initially???
         if (start == 0):
             with lock:
                 ## only starts when we have enough people
                 start = check_start_conditions(client_socket, start, currGame.turns)
-        
-        with lock:
-            ## for when uno calling is possible  - or have it open all the time
-            # if one person has one card:
-            #     anyone can press the uno button but only the uno button
-            
-            if currGame.turns != client_num:
-                print("client_num", client_num)
-                ## sents a message only to that socket if it is not their turn
-                client_socket.sendall("It's not your turn!\n".encode())
-                time.sleep(1)
-                continue
                 
-            ## if it is the turn of the correct player
-            if currGame.turns == client_num:
-                if(message == "1"):
-                    turn_taken = 1
-                    broadcast_message("Player "+ str(client_num) + " has used 1\n")
-                        
-                elif(message == "2"):
-                    turn_taken = 1
-                    broadcast_message("Player "+ str(client_num) + " has used 2\n")
-                    
-                #send to the other clients (update them)
-                else:
-                    broadcast_message("Player "+ str(client_num) + " did not take an action")
-                        
-        if turn_taken == 1:
+        if start == 1:
             
             with lock:
-             
-                if currGame.turns == len(clients):
-                    currGame.turns = 1
-                else:
-                    currGame.turns = currGame.turns + 1
-                    print("currGame.turns", currGame.turns)
-                    turn_taken = 0
-                broadcast_message(f"It is now Player {currGame.turns}'s turn\n")
+                ## for when uno calling is possible  - or have it open all the time
+                # if one person has one card:
+                #     anyone can press the uno button but only the uno button
+                
+                if currGame.turns != client_num:
+                    print("client_num", client_num)
+                    ## sents a message only to that socket if it is not their turn
+                    client_socket.sendall("It's not your turn!\n".encode())
+                    time.sleep(1)
+                    continue
+                    
+                ## if it is the turn of the correct player
+                if currGame.turns == client_num:
+                    if(message == "1"):
+                        turn_taken = 1
+                        broadcast_message("Player "+ str(client_num) + " has used 1\n")
+                            
+                    elif(message == "2"):
+                        turn_taken = 1
+                        broadcast_message("Player "+ str(client_num) + " has used 2\n")
+                        
+                    #send to the other clients (update them)
+                    else:
+                        broadcast_message("Player "+ str(client_num) + " did not take an action")
+                            
+            if turn_taken == 1:
+                
+                with lock:
+                
+                    if currGame.turns == len(clients):
+                        currGame.turns = 1
+                    else:
+                        currGame.turns = currGame.turns + 1
+                        print("currGame.turns", currGame.turns)
+                        turn_taken = 0
+                    broadcast_message(f"It is now Player {currGame.turns}'s turn\n")
 
                 
     # conn.close()
