@@ -4,6 +4,7 @@ import threading
 import time
 import pickle
 from gameState import GameState
+from entities import Player 
 
 HOST = '127.0.0.1'
 PORT = 53333 
@@ -21,7 +22,7 @@ def broadcast_message(message):
         client_socket.sendall(message.encode())
 
 def check_start_conditions(client_socket, start, turn):
-    if len(clients) < 4 | start == 0:
+    if len(clients) < 4 or start == 0:
         print(len(clients))
         client_socket.sendall("Waiting for more players to connect...\n".encode())
         time.sleep(1)
@@ -40,57 +41,59 @@ def handle_client(conn, addr, client):
     client_num = client['client_num']
     client_socket = client['client_socket']
     
-    turn = currGame.turns
-    turn_taken = False # if the player makes a valid action - changes to one to indicate to change who's turn it is
-    
     # if the player makes a valid action - changes to one to indicate to change who's turn it is
-    # turn_taken = 0
+    turn_taken = 0 
     
     while True:
+        
         message = client_socket.recv(1024).decode() #can replace with conn
         ## here for now
         if (message == 'start game'):
             start = 1
              
         ## find a way for this to only be done initially???
-        with lock:
-            ## only starts when we have enough people
-            start = check_start_conditions(client_socket, start, turn)
+        if (start == 0):
+            with lock:
+                ## only starts when we have enough people
+                start = check_start_conditions(client_socket, start, currGame.turns)
         
         with lock:
             ## for when uno calling is possible  - or have it open all the time
             # if one person has one card:
             #     anyone can press the uno button but only the uno button
             
-            if turn != client_num:
+            if currGame.turns != client_num:
+                print("client_num", client_num)
                 ## sents a message only to that socket if it is not their turn
                 client_socket.sendall("It's not your turn!\n".encode())
                 time.sleep(1)
                 continue
                 
             ## if it is the turn of the correct player
-            if turn == client_num:
+            if currGame.turns == client_num:
                 if(message == "1"):
-                    turn_taken = True
+                    turn_taken = 1
                     broadcast_message("Player "+ str(client_num) + " has used 1\n")
                         
                 elif(message == "2"):
-                    turn_taken = True
+                    turn_taken = 1
                     broadcast_message("Player "+ str(client_num) + " has used 2\n")
                     
                 #send to the other clients (update them)
                 else:
                     broadcast_message("Player "+ str(client_num) + " did not take an action")
                         
-        if turn_taken == True:
+        if turn_taken == 1:
             
-            if turn == len(clients):
-                turn = 1
-            else:
-                turn = turn + 1
-            broadcast_message(f"It is now Player {turn}'s turn\n")
-            # reset turn taken
-            turn_taken = False 
+            with lock:
+             
+                if currGame.turns == len(clients):
+                    currGame.turns = 1
+                else:
+                    currGame.turns = currGame.turns + 1
+                    print("currGame.turns", currGame.turns)
+                    turn_taken = 0
+                broadcast_message(f"It is now Player {currGame.turns}'s turn\n")
 
                 
     # conn.close()
