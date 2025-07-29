@@ -19,7 +19,15 @@ def broadcast_message(message):
     for client in clients:
         client_socket = client['client_socket']
         
-        client_socket.sendall(message.encode())
+        try:
+            client_socket.sendall(message.encode())
+            
+        except socket.error as e:
+            print(f"Error sending message to a client")
+            client_socket.close() 
+            clients.remove(client)
+            
+        
 
 def check_start_conditions(client_socket, start, turn):
     if len(clients) < 4 or start == 0:
@@ -49,7 +57,7 @@ def handle_client(conn, addr, client):
             message = client_socket.recv(1024).decode() #can replace with conn
             if not message:  
                 print(f"Client disconnected")
-                break
+                raise ConnectionResetError(f"Player has disconnected.")
             
             ## here for now
             if (message == 'start game'):
@@ -101,15 +109,25 @@ def handle_client(conn, addr, client):
                         broadcast_message(f"It is now Player {currGame.turns}'s turn\n")
 
         
-        except socket.error as e:
+        except (socket.error, ConnectionResetError) as e:
             print(f"Error during data exchange: {e}")
+            broadcast_message("A PLAYER DISCONNECTED, CLOSING GAME. Restart the game to play again\n")
+            with lock:
+                print('in lock')
+                for client in clients:
+                    if client['client_socket'] == client_socket:
+                        try:
+                            print('closing')
+                            client_socket.close() 
+                            print('close')
+                        except Exception as ex:
+                            print(f"Error closing socket for a client")
+                        
+                        # clients.remove(client)   
+            print('out of lock')
             
-        # finally:
-        #     broadcast_message("A PLAYER DISCONNECTED, CLOSING GAME. Restart the game to play again\n")
+            return 
             
-        #     with lock:
-        #         client_socket.close()
-            # conn.close()
 
     # conn.close()
 
