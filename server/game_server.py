@@ -30,12 +30,12 @@ def broadcast_message(message):
         
 
 def check_start_conditions(client_socket, start, turn):
-    if len(clients) < 4 or start == 0:
-        print(len(clients))
-        client_socket.sendall("Waiting for more players to connect...\n".encode())
-        time.sleep(1)
+    if len(clients) == 1: ## so that one player cannot start the game
+        client_socket.sendall("Not enough players\n".encode())
     else:
         broadcast_message("Press start to begin game!")
+        ## for now
+        start = 1 
         ##if users want a game with 2 or 3 players must press start
         if start == 1 or client_num == 4:
             broadcast_message(f"All players connected! Player {turn}'s turn.\n")
@@ -61,7 +61,7 @@ def handle_client(conn, addr, client):
             
             ## here for now
             if (message == 'start game'):
-                start = 1
+                start = check_start_conditions(client_socket, start, currGame.turns)
 
             if (start == 0):
                 with lock:
@@ -114,18 +114,18 @@ def handle_client(conn, addr, client):
             broadcast_message("A PLAYER DISCONNECTED, CLOSING GAME. Restart the game to play again\n")
             with lock:
                 print('in lock')
+                print('client lenght,len(clients)')
                 for client in clients:
-                    if client['client_socket'] == client_socket:
-                        try:
-                            print('closing')
-                            client_socket.close() 
-                            print('close')
-                        except Exception as ex:
-                            print(f"Error closing socket for a client")
+                    print(client)
+                    try:
+                        print('closing')
+                        client['client_socket'].close() 
+                        print('close')
+                    except Exception as ex:
+                        print(f"Error closing socket for a client")
                         
                         # clients.remove(client)   
             print('out of lock')
-            
             return 
             
 
