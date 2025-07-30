@@ -2,13 +2,11 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 import socket
-from threading import Thread
 import pickle
+from clientState import ClientState
 
 HOST = '127.0.0.1'
 PORT = 53333
-global onConnect
-onConnect = False
 
 def receive_data(s):
     while True:
@@ -24,6 +22,9 @@ class GUI:
         self.root.title("Tkinter.Ttk Widgets Example")
         self.root.geometry("500x500")
         self.root.resizable(0,0)
+        self.style = ttk.Style()
+
+        self.clientManager = ClientState()
 
         self.timer = 10
         self.isPauseTimer = False
@@ -67,8 +68,13 @@ class GUI:
 
     def sendMessageToServer(self):
         payload = self.message.get()
-        Thread(target=self.checkRecv, args=()).start()
-        self.socket.sendall(payload.encode())
+        # TODO: Get the global state
+
+    def sendCardToServer(self, card):
+        if(card.type == "number"):
+            cRes = {"playerNum" : self.playerNum , "action": "PLACE", "cardIdx": self.givenCards.index(card)}
+            cResEncoded = pickle.dumps(cRes)
+            self.socket.sendall(cResEncoded)
 
     
     def checkRecv(self):
