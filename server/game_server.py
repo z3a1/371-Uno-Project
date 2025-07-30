@@ -19,15 +19,23 @@ def broadcast_message(message):
     for client in clients:
         client_socket = client['client_socket']
         
-        client_socket.sendall(message.encode())
+        try:
+            client_socket.sendall(message.encode())
+            
+        except socket.error as e:
+            print(f"Error sending message to a client")
+            client_socket.close() 
+            clients.remove(client)
+            
+        
 
 def check_start_conditions(client_socket, start, turn):
-    if len(clients) < 4 or start == 0:
-        print(len(clients))
-        client_socket.sendall("Waiting for more players to connect...\n".encode())
-        time.sleep(1)
+    if len(clients) == 1: ## so that one player cannot start the game
+        client_socket.sendall("Not enough players\n".encode())
     else:
         broadcast_message("Press start to begin game!")
+        ## for now
+        start = 1 
         ##if users want a game with 2 or 3 players must press start
         if start == 1 or client_num == 4:
             broadcast_message(f"All players connected! Player {turn}'s turn.\n")
@@ -45,62 +53,87 @@ def handle_client(conn, addr, client):
     turn_taken = 0 
     
     while True:
-        # try:
-        message = client_socket.recv(1024).decode() #can replace with conn
-            ## here for now
-        if (message == 'start game'):
-            start = 1
-        # except KeyboardInterrupt:
-        #     start = 0
-        #     broadcast_message(f"A player disconnected\n")
-             
-        ## find a way for this to only be done initially???
-        if (start == 0):
-            with lock:
-                ## only starts when we have enough people
-                start = check_start_conditions(client_socket, start, currGame.turns)
-                
-        if start == 1:
+        try:
+            message = client_socket.recv(1024).decode() #can replace with conn
+            if not message:  
+                print(f"Client disconnected")
+                raise ConnectionResetError(f"Player has disconnected.")
             
-            with lock:
-                ## for when uno calling is possible  - or have it open all the time
-                # if one person has one card:
-                #     anyone can press the uno button but only the uno button
-                
-                if currGame.turns != client_num:
-                    print("client_num", client_num)
-                    ## sents a message only to that socket if it is not their turn
-                    client_socket.sendall("It's not your turn!\n".encode())
-                    time.sleep(1)
-                    continue
+            ## here for now
+            if (message == 'start game'):
+                start = check_start_conditions(client_socket, start, currGame.turns)
+
+            if (start == 0):
+                with lock:
+                    ## only starts when we have enough people
+                    start = check_start_conditions(client_socket, start, currGame.turns)
                     
-                ## if it is the turn of the correct player
-                if currGame.turns == client_num:
-                    if(message == "1"):
-                        turn_taken = 1
-                        broadcast_message("Player "+ str(client_num) + " has used 1\n")
-                            
-                    elif(message == "2"):
-                        turn_taken = 1
-                        broadcast_message("Player "+ str(client_num) + " has used 2\n")
-                        
-                    #send to the other clients (update them)
-                    else:
-                        broadcast_message("Player "+ str(client_num) + " did not take an action")
-                            
-            if turn_taken == 1:
+            if start == 1:
+                ## for when uno calling is possible  - or have it open all the time
+                    # if one person has one card:
+                    #     anyone can press the uno button but only the uno button
+                # if message == 'UNO':
+                #         broadcast_message("Player "+ str(client_num) + " called UNO\n")
                 
                 with lock:
-                
-                    if currGame.turns == len(clients):
-                        currGame.turns = 1
-                    else:
-                        currGame.turns = currGame.turns + 1
-                        print("currGame.turns", currGame.turns)
-                        turn_taken = 0
-                    broadcast_message(f"It is now Player {currGame.turns}'s turn\n")
+                    
+                    if currGame.turns != client_num:
+                        print("client_num", client_num)
+                        ## sents a message only to that socket if it is not their turn
+                        client_socket.sendall("It's not your turn!\n".encode())
+                        time.sleep(1)
+                        continue
+                        
+                    ## if it is the turn of the correct player
+                    if currGame.turns == client_num:
+                        if(message == "1"):
+                            turn_taken = 1
+                            broadcast_message("Player "+ str(client_num) + " has used 1\n")
+                                
+                        elif(message == "2"):
+                            turn_taken = 1
+                            broadcast_message("Player "+ str(client_num) + " has used 2\n")
+                            
+                        #send to the other clients (update them)
+                        else:
+                            broadcast_message("Player "+ str(client_num) + " did not take an action")
+                                
+                if turn_taken == 1:
+                    
+                    with lock:
+                    
+                        if currGame.turns == len(clients):
+                            currGame.turns = 1
+                        else:
+                            currGame.turns = currGame.turns + 1
+                            print("currGame.turns", currGame.turns)
+                            turn_taken = 0
+                        broadcast_message(f"It is now Player {currGame.turns}'s turn\n")
 
-                
+        
+        except (socket.error, ConnectionResetError) as e:
+            print(f"Error during data exchange: {e}")
+            if (start == 1):
+                broadcast_message("A PLAYER DISCONNECTED, CLOSING GAME. Restart the game to play again\n")
+                with lock:
+                    print('in lock')
+                    print('client lenght,len(clients)')
+                    for client in clients:
+                        print(client)
+                        try:
+                            print('closing')
+                            client['client_socket'].close() 
+                            print('close')
+                        except Exception as ex:
+                            print(f"Error closing socket for a client")
+                            
+                            # clients.remove(client)   
+                print('out of lock')
+            if (start == 0):
+                pass
+            return 
+            
+
     # conn.close()
 
 def listen(s):
