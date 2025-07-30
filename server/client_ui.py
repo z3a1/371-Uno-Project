@@ -57,7 +57,6 @@ class GUI:
         self.root.after(1000,self.updateTimer)
 
 
-
         # Run the application
         self.root.mainloop()
     
@@ -68,23 +67,21 @@ class GUI:
 
     def sendMessageToServer(self):
         payload = self.message.get()
-        # TODO: Get the global state
+        # TODO: Call Client State and get token
+        pass
 
     def sendCardToServer(self, card):
-        if(card.type == "number"):
-            cRes = {"playerNum" : self.playerNum , "action": "PLACE", "cardIdx": self.givenCards.index(card)}
-            cResEncoded = pickle.dumps(cRes)
-            self.socket.sendall(cResEncoded)
+        # if(card.type == "number"):
+        #     cRes = {"playerNum" : self.playerNum , "action": "PLACE", "cardIdx": self.givenCards.index(card)}
+        #     cResEncoded = pickle.dumps(cRes)
+        #     self.socket.sendall(cResEncoded)
+        #TODO Call Client State
+        pass
 
     
     def checkRecv(self):
-        while True:
-            res = pickle.loads(self.socket.recv(65535))
-            if res:
-                print(res)
-                givenCards = res['cards']
-                for card in givenCards:
-                    print(f"{card.val} , {card.color} , {card.type}")
+        #TODO: Call Client state and check the recieve and parse data there
+        pass
 
     
     def updateTimer(self):

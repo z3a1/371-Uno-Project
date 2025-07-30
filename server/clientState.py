@@ -15,7 +15,8 @@ class ClientState:
         # Map Set Of Player Num and Cards
         self.otherPlayerCards = None
         self.currentPlayerTurn = 0
-        self.playerNum = playerNum
+        self.playerID = playerNum
+        self.numOfPlayers = 0
         self.cSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.cSocket.connect((HOST,PORT))
 
@@ -45,6 +46,13 @@ class ClientState:
         assert(self.isServerDisconnect())
         payload = pickle.dumps({"token": action, "data": data})
         self.cSocket.sendall(payload)
+
+
+    def getPlayersCard(self,playerIdx):
+        if playerIdx > self.numOfPlayers or playerIdx < 0:
+            return None
+        else:
+            return self.givenCards[playerIdx]
 
 
         
