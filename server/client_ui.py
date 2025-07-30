@@ -4,6 +4,7 @@ from tkinter import messagebox
 import socket
 from threading import Thread
 import pickle
+from entities import Card
 
 HOST = '127.0.0.1'
 PORT = 53333
@@ -77,6 +78,7 @@ class GUI:
         payload = self.message.get()
         # Thread().daemon = True
         # Thread(target=self.checkRecv, args=()).start()
+        # self.socket.sendall(payload.encode())
         self.socket.sendall(pickle.dumps(payload))
         self.checkRecv()
 
@@ -99,6 +101,7 @@ class GUI:
                 self.cardBtnArr.append(tk.Button(self.root, text=str(card.val), bg=str(card.color), command=lambda: self.sendCardToServer(card)))    
             for btn in self.cardBtnArr:
                 btn.pack()
+      
                         
 
 
