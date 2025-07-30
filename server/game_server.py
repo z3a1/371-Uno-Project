@@ -19,12 +19,13 @@ def broadcast_message(message):
     for client in clients:
         client_socket = client['client_socket']
         
-        client_socket.sendall(message.encode())
+        client_socket.sendall(pickle.dumps(message))
 
 def check_start_conditions(client_socket, start, turn):
     if len(clients) < 4 or start == 0:
-        print(len(clients))
-        client_socket.sendall("Waiting for more players to connect...\n".encode())
+        # print(len(clients))
+        # print(currGame.players)
+        # client_socket.sendall("Waiting for more players to connect...\n".encode())
         time.sleep(1)
     else:
         broadcast_message("Press start to begin game!")
@@ -60,8 +61,13 @@ def handle_client(conn, addr, client):
             with lock:
                 ## only starts when we have enough people
                 start = check_start_conditions(client_socket, start, currGame.turns)
-                res = {"playerNum": currGame.players[0].playerNum , "cards": currGame.players[0].cards}
+                # res = {"playerNum": currGame.players[0].playerNum , "cards": currGame.players[0].cards}
+                print(message)
+                player_index = client_num-1   # match client to player
+                player = currGame.players[player_index]
+                res = {"playerNum": player.playerNum, "cards": player.cards}
                 resEncode = pickle.dumps(res)
+
                 client_socket.sendall(resEncode)
         if start == 1:
             
@@ -73,7 +79,7 @@ def handle_client(conn, addr, client):
                 if currGame.turns != client_num:
                     print("client_num", client_num)
                     ## sents a message only to that socket if it is not their turn
-                    client_socket.sendall("It's not your turn!\n".encode())
+                    # client_socket.sendall("It's not your turn!\n".encode())
                     time.sleep(1)
                     continue
                     

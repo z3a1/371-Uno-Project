@@ -98,7 +98,7 @@ class GUI:
             for idx,card in enumerate(self.givenCards):
                 print(f"{card.val} , {card.color} , {card.type}")
                 cardBg =  ""
-                self.cardBtnArr.append(tk.Button(self.root, text=str(card.val), bg=str(card.color), command=lambda: self.sendCardToServer(card)))    
+                self.cardBtnArr.append(tk.Button(self.root, text=str(card.val), bg=str(card.color), command=lambda c=card: self.sendCardToServer(c)))    
             for btn in self.cardBtnArr:
                 btn.pack()
       
