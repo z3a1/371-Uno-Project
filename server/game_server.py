@@ -69,11 +69,13 @@ def handle_client(conn, addr, client):
                     start = check_start_conditions(client_socket, start, currGame.turns)
                     
             if start == 1:
-                
-                with lock:
-                    ## for when uno calling is possible  - or have it open all the time
+                ## for when uno calling is possible  - or have it open all the time
                     # if one person has one card:
                     #     anyone can press the uno button but only the uno button
+                # if message == 'UNO':
+                #         broadcast_message("Player "+ str(client_num) + " called UNO\n")
+                
+                with lock:
                     
                     if currGame.turns != client_num:
                         print("client_num", client_num)
@@ -111,21 +113,24 @@ def handle_client(conn, addr, client):
         
         except (socket.error, ConnectionResetError) as e:
             print(f"Error during data exchange: {e}")
-            broadcast_message("A PLAYER DISCONNECTED, CLOSING GAME. Restart the game to play again\n")
-            with lock:
-                print('in lock')
-                print('client lenght,len(clients)')
-                for client in clients:
-                    print(client)
-                    try:
-                        print('closing')
-                        client['client_socket'].close() 
-                        print('close')
-                    except Exception as ex:
-                        print(f"Error closing socket for a client")
-                        
-                        # clients.remove(client)   
-            print('out of lock')
+            if (start == 1):
+                broadcast_message("A PLAYER DISCONNECTED, CLOSING GAME. Restart the game to play again\n")
+                with lock:
+                    print('in lock')
+                    print('client lenght,len(clients)')
+                    for client in clients:
+                        print(client)
+                        try:
+                            print('closing')
+                            client['client_socket'].close() 
+                            print('close')
+                        except Exception as ex:
+                            print(f"Error closing socket for a client")
+                            
+                            # clients.remove(client)   
+                print('out of lock')
+            if (start == 0):
+                pass
             return 
             
 
