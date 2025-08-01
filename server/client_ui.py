@@ -8,12 +8,12 @@ from clientState import ClientState
 HOST = '127.0.0.1'
 PORT = 53333
 
-def receive_data(s):
-    while True:
-        data = s.recv(1024).decode()
-        if not data:
-            break
-        print(data)
+# def receive_data(s):
+#     while True:
+#         data = s.recv(1024).decode()
+#         if not data:
+#             break
+#         print(data)
 
 class GUI:
     def __init__(self):
@@ -25,12 +25,13 @@ class GUI:
         self.style = ttk.Style()
 
         self.clientManager = ClientState()
-
+        self.clientManager.onGameUpdate = self.checkRecv
+      
         self.timer = 10
         self.isPauseTimer = False
         self.givenCards = []
         self.cardBtnArr = []
-        self.playerNum = 0
+        # self.playerNum = 0
 
         self.style.configure(self.root, background = "red")
         self.style.configure(self.root, background = "blue")
@@ -38,8 +39,8 @@ class GUI:
         self.style.configure(self.root, background = "yellow")
         
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((HOST,PORT))
+        # self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # self.socket.connect((HOST,PORT))
 
 
         self.label = ttk.Label(self.root, text="This is a Tkinter.Ttk Label")
@@ -68,15 +69,22 @@ class GUI:
         # Run the application
         self.root.mainloop()
     
+    
     def pauseTimer(self):
         self.isPauseTimer = not self.isPauseTimer
         if not self.isPauseTimer:
             self.root.after(1000,self.updateTimer)
 
     def sendMessageToServer(self):
-        payload = self.message.get()
+        # payload = self.message.get()
         # TODO: Call Client State and get token
-        pass
+        # pass
+        payload = self.message.get()
+        self.clientManager.handleSend("DRAW", {"playerNum": self.clientManager.playerID})
+        
+      
+      
+          
 
     def sendCardToServer(self, card):
         # if(card.type == "number"):
@@ -84,12 +92,25 @@ class GUI:
         #     cResEncoded = pickle.dumps(cRes)
         #     self.socket.sendall(cResEncoded)
         #TODO Call Client State
-        pass
+        # pass
+        idX = self.clientManager.givenCards[self.clientManager.playerID].index(card)
+        self.clientManager.handleSend("PLACE", {"playerNum": self.clientManager.playerID, "cardIdx": idX})
+      
 
     
     def checkRecv(self):
         #TODO: Call Client state and check the recieve and parse data there
-        pass
+        # pass
+      # Clear previous buttons
+        self.givenCards = self.clientManager.getPlayersCard(self.clientManager.playerID)
+        for btn in self.cardBtnArr:
+            btn.destroy()
+        self.cardBtnArr.clear()
+
+        for card in self.givenCards:
+            btn = tk.Button(self.root, text=str(card.val), bg=card.color, command=lambda c=card: self.sendCardToServer(c))
+            btn.pack()
+            self.cardBtnArr.append(btn)
 
     def updateTimer(self):
 

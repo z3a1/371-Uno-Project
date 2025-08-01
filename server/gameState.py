@@ -22,15 +22,17 @@ class GameState:
         
         return deck
     
-    def drawCardForPlayer(self, playerNum: int) -> bool:
+    def drawCardForPlayer(self, playerNum: int) -> Card:
         if(playerNum > len(self.players) or playerNum < 0):
-            return False
+            # return False
+            return None
         else:
             self.seed = seed()
             cardVal = randint(self.lowestCard,self.highestCard)
             colorIdx = randint(self.lowestColorIdx,self.highestColorIdx)
             self.players[playerNum].addCard(Card(self.colors[colorIdx],"number",cardVal))
-            return True
+            # return True
+            return (Card(self.colors[colorIdx],"number",cardVal))
 
     def placePlayerCard(self,playerNum: int, cardIdx: int) -> Card:
         if(playerNum > len(self.players) or playerNum < 0) or (cardIdx > len(self.players[playerNum].cards) or cardIdx < 0):
