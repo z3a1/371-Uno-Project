@@ -25,7 +25,7 @@ class GUI:
         self.style = ttk.Style()
 
         self.clientManager = ClientState()
-        self.clientManager.onGameUpdate = self.checkRecv
+        self.clientManager.onGameRecv = self.checkRecv
       
         self.timer = 10
         self.isPauseTimer = False
@@ -80,12 +80,12 @@ class GUI:
         # TODO: Call Client State and get token
         # pass
         payload = self.message.get()
-        self.clientManager.handleSend("DRAW", {"playerNum": self.clientManager.playerID})
+        if(payload == "DRAW"):
+            self.clientManager.handleSend("DRAW", {"playerNum": self.clientManager.playerID})
+        elif(payload == "INITIALIZE"):
+            self.clientManager.handleSend("INITIALIZE", {"playerNum": self.clientManager.playerID})
         
       
-      
-          
-
     def sendCardToServer(self, card):
         # if(card.type == "number"):
         #     cRes = {"playerNum" : self.playerNum , "action": "PLACE", "cardIdx": self.givenCards.index(card)}
@@ -93,8 +93,9 @@ class GUI:
         #     self.socket.sendall(cResEncoded)
         #TODO Call Client State
         # pass
-        idX = self.clientManager.givenCards[self.clientManager.playerID].index(card)
-        self.clientManager.handleSend("PLACE", {"playerNum": self.clientManager.playerID, "cardIdx": idX})
+        idx = self.clientManager.givenCards.index(card)
+     
+        self.clientManager.handleSend("PLACE", {"playerNum": self.clientManager.playerID, "cardIdx": idx})
       
 
     
@@ -102,15 +103,16 @@ class GUI:
         #TODO: Call Client state and check the recieve and parse data there
         # pass
       # Clear previous buttons
-        self.givenCards = self.clientManager.getPlayersCard(self.clientManager.playerID)
+        
         for btn in self.cardBtnArr:
             btn.destroy()
         self.cardBtnArr.clear()
-
-        for card in self.givenCards:
+       
+        for card in self.clientManager.getPlayerGivenCards(self.clientManager.playerID):
             btn = tk.Button(self.root, text=str(card.val), bg=card.color, command=lambda c=card: self.sendCardToServer(c))
             btn.pack()
             self.cardBtnArr.append(btn)
+          
 
     def updateTimer(self):
 

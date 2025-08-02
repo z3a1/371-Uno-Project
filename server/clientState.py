@@ -9,7 +9,7 @@ class ClientState:
         #Player Cards
         self.isGameRunning = True
         # Key: PlayerNum, Val: Card Array
-        self.givenCards = {}
+        self.givenCards = []
         # Card Object of the last card played 
         self.lastPlayedCard = None
         # Map Set Of Player Num and Cards
@@ -52,10 +52,13 @@ class ClientState:
 
 
     def getPlayersCard(self,playerIdx):
-        # if playerIdx > self.numOfPlayers or playerIdx < 0:
-        #     return None
-        # else:
+        if playerIdx > self.numOfPlayers or playerIdx < 0:
+            return None
+        else:
             return self.givenCards[playerIdx]
+    
+    def getPlayerGivenCards(self,playerIdx):
+            return self.givenCards
 
 
     def handleRecv(self):
@@ -83,7 +86,7 @@ class ClientState:
         #     self.isGameRunning = False
         while self.isGameRunning:
             res = pickle.loads(self.cSocket.recv(65535))
-            
+           
             playerNum = res["playerNum"] 
           
 
@@ -93,35 +96,24 @@ class ClientState:
                     if idx == "lastPlayedCard":
                         self.lastPlayedCard = val
                     elif idx == "playerCards":
-                        self.givenCards = val
+                        self.givenCards =val
+                        # print(val)
                     elif idx == "isGameDone":
                         self.isGameRunning = val
                     elif idx == "currPlayerTurn":
                         self.currentPlayerTurn = val
                     elif idx == "drawnCard":
-                        if playerNum not in self.givenCards:
-                            self.givenCards[playerNum] = []
-                        self.givenCards[playerNum].append(val)
-                
+                        self.givenCards.append(val)
+                     
                     elif idx == "placedCard":
-                       for card in self.givenCards[playerNum]:
+                        for card in self.givenCards:
+                          
                             if(card == val):
-                                self.givenCards[playerNum].remove(val)
-                print(self.givenCards)
-                if self.onGameUpdate:
-                    self.onGameUpdate()
+                                self.givenCards.remove(val)
+                print(self.givenCards)             
+
+                if self.onGameRecv:
+                    self.onGameRecv()
             else:
                 self.isGameRunning = False
          
-
-
-    def handleToken(self, token, data):
-        playerNum = data.get("playerNum")
-        card = data.get("card")
-        if token == "PLACE":
-            self.lastPlayedCard = card
-          
-            print(f"Player {data.get('playerNum')} placed a card.")
-        elif token == "DRAW":
-            self.givenCards[playerNum].append(card)      
-        

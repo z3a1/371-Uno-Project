@@ -60,13 +60,20 @@ def handle_client(conn, addr, client):
             #Remove once start conditions works with GUI
             token = message.get("token")
             data = message.get("data")
-            
-            if(token=="PLACE"):
+            if(token == "INITIALIZE"):
+                playerNum = data.get("playerNum")
+                initializeCards = currGame.players[playerNum].cards
+                
+
+                broadcast_message({"playerNum": playerNum, "playerCards": initializeCards, "isGameRunning": True})
+
+            elif(token=="PLACE"):
                 turn_taken=1
                 playerNum = data.get("playerNum")
                 cardIdx = data.get("cardIdx")
+              
                 card =currGame.placePlayerCard(playerNum, cardIdx)
-
+               
                 broadcast_message({"playerNum": playerNum, "placedCard": card, "isGameRunning": True})
                          
 
@@ -74,7 +81,7 @@ def handle_client(conn, addr, client):
                 turn_taken=1
                 playerNum = data.get("playerNum")
                 card = currGame.drawCardForPlayer(playerNum)
-                
+             
                 ##If we use deckLength
                 # deckLength = len(currGame.players[playerNum].cards)
                 # broadcast_message({"playerNum": playerNum, "deckLength": deckLength, "isGameRunning": True})
@@ -180,14 +187,7 @@ def listen(s):
     while True:
         conn, addr = s.accept()
         print("Player Added: ", addr)
-    
-        # with conn: 
-        # data = conn.recv(1024)
-        # if not data:
-        #     break
-       
-        # print(data.decode())
-        # conn.sendall(b'back at you TCP')
+ 
 
         client_num += 1
         currGame.numOfPlayers += 1
@@ -195,6 +195,7 @@ def listen(s):
         client = {'client_num': client_num,'client_socket': conn}
         clients.append(client)
  
+       
         Thread(target=handle_client, args = (conn, addr, client)).start()
 
 
