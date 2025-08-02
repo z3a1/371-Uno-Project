@@ -4,6 +4,13 @@ class Card:
         self.color = color
         self.type = cType
         self.val = val
+    def __eq__(self, c):
+        if not isinstance(c, Card):
+            return False
+        return (
+            self.color == c.color and
+            self.type == c.type and
+            self.val == c.val)
 
 
 # The turn variable is to be initally set to false
