@@ -12,7 +12,7 @@ Main GUI Functions
 a) At each iteration of game loop, call the appropriate public gui function
 (ie print_menu(), print_board(), print_result(), waiting_room(), 
 disconnection(), etc with appropriate args)
-b) Upon button clicks, gui functions may modify fields from gameState and 
+b) Upon button clicks, gui functions may modify fields from clientState and 
 Player classes. These fields determine which gui screen is to be called next
 loop
 """
@@ -27,9 +27,9 @@ def print_menu(root, num_players, state):
 
     join_game = tk.Button(frame, text="Join Game", font=menu_font, command=lambda: _curr_state(state, "wait"))
     join_game.grid(row = 0, column = 0, sticky = W, pady = 5)
-    instructions = tk.Button(frame, text="Instructions", font=menu_font, command=lambda: _print_instructions(root, num_players))
+    instructions = tk.Button(frame, text="Instructions", font=menu_font, command=lambda: _print_instructions(root, num_players, state))
     instructions.grid(row = 1, column = 0, sticky = W, pady = 5)
-    credits = tk.Button(frame, text="Credits", font=menu_font, command=lambda: _print_credits(root, num_players))
+    credits = tk.Button(frame, text="Credits", font=menu_font, command=lambda: _print_credits(root, num_players, state))
     credits.grid(row = 2, column = 0, sticky = W, pady = 5)
 
     if (state.waitingRoom == True):
@@ -60,10 +60,13 @@ def waiting_room(root, state):
 
     return
 
-#player: int from [0, 3]
-#hand: list of up to 7 elements
-#the last three cards played
-def print_board(root, player, state, lastCard, card_nums):
+#player: instance of player class
+#state: current state of game from players
+# lastCard -- last card played, passed separately for clarity
+# card_nums: a list of 1,2, 0r 3 elements where card_nums[i] 
+# corresponds to the number of cards player(i) has 
+
+def print_board(root, player, state, card_nums):
     screen_col = "deep sky blue"
     main_font = tk.font.Font(family="Arial", size=24, weight=tk.NORMAL)
     _screen_set_up(root, "Main Game", main_font, screen_col)
@@ -75,7 +78,7 @@ def print_board(root, player, state, lastCard, card_nums):
     deck = tk.Label(frameCentre, text="Deck", font=("Helvetica", 14), bg="grey50", fg='white', justify='left', width=5, height=5)
     deck.grid(row = 0, column = 1, sticky = "", pady = 2, padx=8)
     #print last card played
-    prevCard = tk.Label(frameCentre, bg=lastCard.color, text=lastCard.type, font=("Helvetica", 34), fg='grey69', width=2, height=2)
+    prevCard = tk.Label(frameCentre, bg=state.lastPlayedCard.color, text=state.lastPlayedCard.type, font=("Helvetica", 34), fg='grey69', width=2, height=2)
     prevCard.grid(row = 0, column = 0, sticky = "", pady = 10, padx=8)
     #print draw card button:
     drawCardBtn = tk.Button(frameCentre, text="Draw\n card", font=("Helvetica", 20), command=lambda: _draw_card(player))
@@ -114,6 +117,7 @@ def disconnection(root, state):
 Private Helper Functions
 """
 
+##modies instance of the clientState class upon certain conditions
 def _curr_state(currState, stateStr):
     if stateStr == "wait":
         currState.waitingRoom = True
@@ -126,15 +130,17 @@ def _curr_state(currState, stateStr):
         currState.numOfPlayers = 0
     return 
 
-def _play_card(p, index, prevCard):
+#When players clicks valid card to play, changes made to reflect that
+def _play_card(p, index, state):
     if p.turn == True:
-        if p.cards[index].color == prevCard.color or p.cards[index].type == prevCard.type:
+        if p.cards[index].color == state.lastPlayedCard.color or p.cards[index].type == state.lastPlayedCard.type:
             #now there is a new prevCard
-            prevCard.color = p.cards[index].color
-            prevCard.type = p.cards[index].type
+            state.lastPlayedCard.color = p.cards[index].color
+            state.lastPlayedCard.type = p.cards[index].type
             p.playCard(index)
     p.turn = False
-
+    
+#Player draws card instead of playing
 def _draw_card(p):
     if p.turn == True:
         newCard = Card()
@@ -156,6 +162,7 @@ def _screen_set_up(root, heading, font, colour):
     root.configure(bg=colour)
     menu_font = tkFont.Font(family=font, size=24, weight=tk.NORMAL)
 
+#screen user sees upon winning
 def _you_win(root):
     root.title("Winner!")
     root.configure(bg="green2")
@@ -164,6 +171,7 @@ def _you_win(root):
     win.grid(row = 1, column = 1, sticky = "ew", pady = 100, padx = 80)
     return 
 
+#screen user sees upon losing
 def _you_lose(root):
     root.title("Loser!")
     root.configure(bg="orange red")
@@ -173,28 +181,7 @@ def _you_lose(root):
     return 
 
 ##credits found from main menu
-def _print_credits(root, num_players):
-    _screen_set_up(root, "Credits", "Verdana", "purple")
-    frame = tk.Frame(root, bg="purple")
-    frame.place(relx=0.5, rely=0.4, anchor=tk.CENTER)  
-    creds_font = tkFont.Font(family="Arial", size=14)
-    creds = (
-        "GAME CREATED BY:\n\n"
-        "-- Serena Dhillon\n\n"
-        "-- Jennifer Grinberg\n\n"
-        "-- Paul Colonia \n\n"
-        "-- Amir Nur Saidy\n\n"
-    )
-
-    label = tk.Label(frame, text=creds, font=creds_font, bg='purple', fg='white', justify='left')
-    label.grid(row = 0, column = 0, sticky = W, pady = 2)
-
-    back_button = tk.Button(frame, text="Back", font=creds_font, command=lambda: print_menu(root, num_players, state))
-    back_button.grid(row = 1, column = 0, sticky = W, pady = 2)
-    return 0
-
-##credits found from main menu
-def _print_credits(root, num_players):
+def _print_credits(root, num_players, state):
     _screen_set_up(root, "Credits", "Verdana", "purple")
     frame = tk.Frame(root, bg="purple")
     frame.place(relx=0.5, rely=0.4, anchor=tk.CENTER)  
@@ -215,7 +202,7 @@ def _print_credits(root, num_players):
     return 0
 
 #game instrcutions found at main menu
-def _print_instructions(root, num_players):
+def _print_instructions(root, num_players, state):
     _screen_set_up(root, "How to Play", "Verdana", "sky blue")
 
     instr_font = tkFont.Font(family="arial", size=14)
@@ -245,12 +232,12 @@ def _print_instructions(root, num_players):
     return 0
 
 #print all cards at bottom of screen
-#pself -- players own hand, face up
+#player, state: instances of player and clientState classes
 #p2-p4: other players, cards printed face down
-#card_nums is a list where gelements are how much cards other 
-#index corresponds to playerID
-#players currently have in their hands
-#prev_card: last cardf played
+#card_nums: list of 1,2, or 3 elements where card_nums[i]
+#comtains the number of cards player(i) has
+#col: background color 
+
 def _print_hands(root, state, player, card_nums, col):
     hand_font = tkFont.Font(family="Helvetica", size=45)
     #print user's own cards
@@ -273,7 +260,7 @@ def _print_hands(root, state, player, card_nums, col):
 
         pseudoBtn.bind(
             "<Button-3>",
-            lambda e, i=index: _play_card(player, i, state.lastPlayedCard)
+            lambda e, i=index: _play_card(player, i, state)
         )
 
         pseudoBtn.bind("<Enter>", lambda e, btn=pseudoBtn: btn.config(bg="purple"))
