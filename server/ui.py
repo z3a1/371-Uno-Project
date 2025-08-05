@@ -83,6 +83,8 @@ def print_board(root, player, state, card_nums):
     #print draw card button:
     drawCardBtn = tk.Button(frameCentre, text="Draw\n card", font=("Helvetica", 20), command=lambda: _draw_card(player))
     drawCardBtn.grid(row=0, column=2, sticky = "", padx=8)
+    drawUnoBtn = tk.Button(frameCentre, text="Draw\n card", font=("Helvetica", 20), command=lambda: _press_uno(player, card_nums, state))
+    drawUnoBtn.grid(row=1, column=2, sticky = "", padx=8)
     
     _print_hands(root, state, player, card_nums, screen_col)
 
@@ -117,7 +119,17 @@ def disconnection(root, state):
 Private Helper Functions
 """
 
-##modies instance of the clientState class upon certain conditions
+def _press_uno(player, card_nums,state):
+    for p in range(len(card_nums)):
+        if p == 1:
+            uno = True
+            #player i has been caught with only one card
+            #in game engine must draw two cards
+            state.unoCaught[p] = 1
+        else:
+            uno = False
+
+##modifies instance of the clientState class upon certain conditions
 def _curr_state(currState, stateStr):
     if stateStr == "wait":
         currState.waitingRoom = True
