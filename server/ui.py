@@ -58,11 +58,11 @@ def waiting_room(root, numPlayers, clk):
 # corresponds to the number of cards player(i) has 
 #clk: tracks user clicks
 
-def print_board(root, player, state, card_nums, clk):
+def print_board(root, player, currTurn, playID, lastCard, card_nums, numPlayers, clk):
     screen_col = "deep sky blue"
     main_font = tk.font.Font(family="Arial", size=24, weight=tk.NORMAL)
     _screen_set_up(root, "Main Game", main_font, screen_col)
-    _turn_info(root, state, screen_col)
+    _turn_info(root, currTurn, playID, screen_col)
 
     #print "face down deck" in centre
     frameCentre = tk.Frame(root, bg=screen_col)
@@ -70,15 +70,15 @@ def print_board(root, player, state, card_nums, clk):
     deck = tk.Label(frameCentre, text="Deck", font=("Helvetica", 14), bg="grey50", fg='white', justify='left', width=5, height=5)
     deck.grid(row = 0, column = 1, sticky = "", pady = 2, padx=8)
     #print last card played
-    prevCard = tk.Label(frameCentre, bg=state.lastPlayedCard.color, text=state.lastPlayedCard.type, font=("Helvetica", 34), fg='grey69', width=2, height=2)
+    prevCard = tk.Label(frameCentre, bg=lastCard.color, text=lastCard.type, font=("Helvetica", 34), fg='grey69', width=2, height=2)
     prevCard.grid(row = 0, column = 0, sticky = "", pady = 10, padx=8)
     #print draw card button:
     drawCardBtn = tk.Button(frameCentre, text="Draw\n card", font=("Helvetica", 20), command=lambda: clk.clicked('drawCard'))
     drawCardBtn.grid(row=0, column=2, sticky = "", padx=8)
-    drawUnoBtn = tk.Button(frameCentre, text="Draw\n card", font=("Helvetica", 20), command=lambda: clk.clicked('uno'))
+    drawUnoBtn = tk.Button(frameCentre, text="UNO!", font=("Helvetica", 20), command=lambda: clk.clicked('uno'))
     drawUnoBtn.grid(row=1, column=2, sticky = "", padx=8)
     
-    _print_hands(root, state, player, card_nums, screen_col)
+    _print_hands(root, numPlayers, player, card_nums, currTurn, screen_col, clk)
 
     return
 
@@ -141,7 +141,7 @@ def _you_lose(root):
     return 
 
 ##credits found from main menu
-def _print_credits(root, num_players, state, clk):
+def _print_credits(root, num_players, clk):
     _screen_set_up(root, "Credits", "Verdana", "purple")
     frame = tk.Frame(root, bg="purple")
     frame.place(relx=0.5, rely=0.4, anchor=tk.CENTER)  
@@ -162,7 +162,7 @@ def _print_credits(root, num_players, state, clk):
     return 0
 
 #game instrcutions found at main menu
-def _print_instructions(root, num_players, state, clk):
+def _print_instructions(root, num_players, clk):
     _screen_set_up(root, "How to Play", "Verdana", "sky blue")
 
     instr_font = tkFont.Font(family="arial", size=14)
@@ -198,7 +198,7 @@ def _print_instructions(root, num_players, state, clk):
 #comtains the number of cards player(i) has
 #col: background color 
 
-def _print_hands(root, state, player, card_nums, col, clk):
+def _print_hands(root, numPlayers, player, card_nums, currTurn, col, clk):
     hand_font = tkFont.Font(family="Helvetica", size=45)
     #print user's own cards
     frameSelf = tk.Frame(root, bg=col)
@@ -229,27 +229,27 @@ def _print_hands(root, state, player, card_nums, col, clk):
 
 
     ##print number of cards across screen of opponents
-    if state.numOfPlayers == 2:
-        fontCol = _if_turn(state, 0)
+    if numPlayers == 2:
+        fontCol = _if_turn(currTurn, player.playerNum)
         otherCards1 = tk.Frame(root, bg=col)
         otherCards1.place(relx=0.5, rely=0.1, anchor="n")
         label1 = tk.Label(otherCards1, font=hand_font, text=str(card_nums[0]), bg=col, fg=fontCol, justify='left')
         label1.grid(row = 0, column = 0, sticky = "", pady = 2)
     else:
-        fontCol1 = _if_turn(state, 0)
+        fontCol1 = _if_turn(currTurn, player.playerNum)
         otherCards1 = tk.Frame(root, bg=col)
         otherCards1.place(relx=0.1, rely=0.5, anchor="w")
         label1 = tk.Label(otherCards1,font=hand_font, text=str(card_nums[0]), bg=col, fg=fontCol1, justify='left')
         label1.grid(row = 0, column = 0, sticky = "", pady = 2)
 
-        fontCol2 = _if_turn(state, 1)
+        fontCol2 = _if_turn(currTurn, player.playerNum)
         otherCards2 = tk.Frame(root, bg=col)
         otherCards2.place(relx=0.5, rely=0.1, anchor="n")
         label1 = tk.Label(otherCards2,font=hand_font, text=str(card_nums[1]), bg=col, fg=fontCol2, justify='left')
         label1.grid(row = 0, column = 0, sticky = "", pady = 2)
 
-        if state.numOfPlayers == 4:
-            fontCol3 = _if_turn(state, 2)
+        if numPlayers == 4:
+            fontCol3 = _if_turn(currTurn, player.playerNum)
             otherCards3 = tk.Frame(root, bg=col)
             otherCards3.place(relx=0.9, rely=0.5, anchor="e")
             label1 = tk.Label(otherCards3,font=hand_font, text=str(card_nums[2]), bg=col, fg=fontCol3, justify='left')
@@ -258,18 +258,18 @@ def _print_hands(root, state, player, card_nums, col, clk):
     return 0
 
 #Tells players whose turn it is currently
-def _turn_info(root, state, colour):
-    if state.currentPlayerTurn == state.playerID:
+def _turn_info(root, currPlayerTurn, playID, colour):
+    if currPlayerTurn == playID:
         msg = "It's your turn!"
     else:
-        msg = f"It is now Player {state.currentPlayerTurn}'s turn."
+        msg = f"It is now Player {currPlayerTurn}'s turn."
     turn_font = tk.font.Font(family="Arial", size=24, weight=tk.NORMAL)
     label = tk.Label(root, text=msg, font=turn_font, bg=colour, fg='white', justify='left')
     label.place(relx=0.5, rely=0.6, anchor='n') 
     return
 
-def _if_turn(state, pid):
-    if state.currentPlayerTurn == pid:
+def _if_turn(currTurn, pid):
+    if currTurn == pid:
         fontCol = "red"
     else:
         fontCol = "white"
@@ -309,7 +309,27 @@ root.mainloop()
 clk = Click()
 root = tk.Tk()
 
-for i in range(10):
-    print_menu(root, clk)
-    clk.printall()
+#waiting_room(root, 6, clk)
+#game_res(root, False, clk)
+
+card1 = Card(color="red", val=0, cType="1")
+card2 = Card(color="blue", val=1, cType="4")
+card3 = Card(color="red", val=0, cType="7")
+card4 = Card(color="yellow", val=2, cType="8")
+card5 = Card(color="green", val=3, cType="1")
+lastCard = Card(color="yellow", val=2, cType="2")
+
+hand = [card1, card2, card3, card4, card5]
+cardNums = [5, 6, 7]    
+player = Player(playerNum=1, cards=hand)
+player.turn = False
+player.win = False
+playID = 1
+
+currTurn = 2
+numOfPlayers = 4
+lastPlayedCard =lastCard
+
+print_board(root, player, currTurn, playID, lastPlayedCard, cardNums, numOfPlayers, clk)
+
 root.mainloop()
