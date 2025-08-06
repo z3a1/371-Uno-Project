@@ -31,6 +31,8 @@ class Player:
             return self.cards.pop(index)
 
 # This manually checks which biutton is clicked
+# boolean field is set when clicked, and server checks click for 
+# valiation and processes meaning of clcik
 
 class Click:
     def __init__(self):
