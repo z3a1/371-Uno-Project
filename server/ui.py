@@ -277,33 +277,6 @@ def _if_turn(currTurn, pid):
 
 ##DEMO RUN#
 #DELETE FOR FINAL VERSION#
-"""
-card1 = Card(color="red", val=0, cType="1")
-card2 = Card(color="blue", val=1, cType="4")
-card3 = Card(color="red", val=0, cType="7")
-card4 = Card(color="yellow", val=2, cType="8")
-card5 = Card(color="green", val=3, cType="1")
-lastCard = Card(color="yellow", val=2, cType="2")
-
-hand = [card1, card2, card3, card4, card5]
-cardNums = [5, 6, 7]    
-player = Player(playerNum=1, cards=hand)
-player.turn = False
-player.win = False
-#player.win = True
-state = ClientState()
-state.numOfPlayers = 4
-state.lastPlayedCard =lastCard
-root = tk.Tk()
-#print_menu(root, 3, state)
-#waiting_room(root, state)
-#game_res(root, player, state)
-#disconnection(root, state)
-#_turn_info(root, 3, state)
-
-print_board(root, player, state, lastCard, cardNums)
-
-root.mainloop()
 
 """
 clk = Click()
@@ -333,3 +306,5 @@ lastPlayedCard =lastCard
 print_board(root, player, currTurn, playID, lastPlayedCard, cardNums, numOfPlayers, clk)
 
 root.mainloop()
+
+"""
