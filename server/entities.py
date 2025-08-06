@@ -19,6 +19,7 @@ class Player:
         self.playerNum = playerNum
         self.cards = cards
         self.turn = False
+        self.win = False
 
     def addCard(self,card):
         self.cards.append(card)
@@ -28,4 +29,32 @@ class Player:
             return -1
         else:
             return self.cards.pop(index)
-        
+
+# This manually checks which biutton is clicked
+
+class Click:
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.joinWaitingRoom = False
+        self.startGame = False
+        self.drawCard = False
+        self.menu = False
+        self.instructions = False
+        self.credits = False
+        self.uno = False
+        self.hand = [0,0,0,0,0,0,0,0,0,0, 0, 0] ## assume can't have over 12 cards
+
+    def clicked(self, btnType):
+        self.reset()
+        if isinstance(btnType, tuple) and btnType[0] == 'hand':
+            idx = btnType[1]
+            self.hand[idx] = 1
+        elif hasattr(self, btnType):
+            setattr(self, btnType, True)
+
+    def printall(self):
+        for k,v in self.__dict__.items():
+            print(f"{str(k)} = {str(v)}")
+            print("\n")
