@@ -53,8 +53,3 @@ class Click:
             self.hand[idx] = 1
         elif hasattr(self, btnType):
             setattr(self, btnType, True)
-
-    def printall(self):
-        for k,v in self.__dict__.items():
-            print(f"{str(k)} = {str(v)}")
-            print("\n")
