@@ -7,10 +7,16 @@ class GameState:
         self.players = []
         self.colors = ['red','green','blue','yellow']
         self.turns = 1
+        ##These fields are important for gui
         self.currTurn = 0
         self.isGameOver = False
         self.seed = seed()
         self.startingMaxCards, self.lowestCard, self.highestCard, self.lowestColorIdx, self.highestColorIdx = 8, 0, 9, 1, 3
+        self.menu = True ##initial screen when program runs
+        self.waitingRoom = False ##player can choose to enter waiting for game
+        self.gameStart = False ##game has offically started
+        self.error = False ##if someone disconnects, they get error screen
+        self.lastCardPlayed = None 
 
     def initializeDeck(self) -> list:
         # startingMaxCards = 8, lowestCard = 0, highestCard = 9 ,lowestColorIdx = 1, highestColorIdx = 4
