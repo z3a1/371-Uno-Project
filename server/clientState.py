@@ -7,9 +7,9 @@ PORT = 53333
 class ClientState:
     def __init__(self, playerNum: int = 0):
         #Player Cards
-        self.isGameRunning = True
+        self.isGameRunning = False
         # Key: PlayerNum, Val: Card Array
-        self.givenCards = []
+        self.givenCards = {}
         # Card Object of the last card played 
         self.lastPlayedCard = None
         # Map Set Of Player Num and Cards
@@ -19,11 +19,11 @@ class ClientState:
         self.numOfPlayers = 0
         self.cSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.cSocket.connect((HOST,PORT))
-
-        
+        self.waitingRoom = False ##player can choose to enter waiting for game
+        self.error = False ##if someone disconnects, they get error screen
         # Function Call To Check if we need to recieve anything
-        # self.handleRecv()
-        threading.Thread(target=self.handleRecv).start()
+        self.handleRecv()
+        self.unoCaught = [0,0,0,0]
 
     
     def isServerDisconnect(self) -> bool:
@@ -45,9 +45,8 @@ class ClientState:
         # In game tokens: [Drawing, or Placing card]
         # Waiting: [NoneType], Ready: [NoneType], Playing: [Card Objects]
         #Assert fails if client is not connected
-        # assert(self.isServerDisconnect())
+        assert(self.isServerDisconnect())
         payload = pickle.dumps({"token": action, "data": data})
-      
         self.cSocket.sendall(payload)
 
 
@@ -56,10 +55,10 @@ class ClientState:
             return None
         else:
             return self.givenCards[playerIdx]
-    
-    def getPlayerGivenCards(self,playerIdx):
-            return self.givenCards
 
+
+        
+        
 
     def handleRecv(self):
         # Recieve the data then extract the map and determine if the val for the key is data
