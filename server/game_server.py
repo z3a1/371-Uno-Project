@@ -20,8 +20,6 @@ def broadcast_message(message):
         client_socket = client['client_socket']
         
         try:
-            # client_socket.sendall(message.encode())
-          
             client_socket.sendall(pickle.dumps(message))
             
         except socket.error as e:
@@ -31,16 +29,18 @@ def broadcast_message(message):
             
     
 
-def check_start_conditions(client_socket, start, turn):
-    if len(clients) == 1: ## so that one player cannot start the game
-        client_socket.sendall("Not enough players\n".encode())
+def check_start_conditions(client_socket, start, turn, data):
+    if len(clients) == 0: ## so that one player cannot start the game
+        client_socket.sendall("Not enough players\n")
     else:
-        # broadcast_message("Press start to begin game!")
-        ## for now
         start = 1 
         ##if users want a game with 2 or 3 players must press start
         if start == 1 or client_num == 4:
             # broadcast_message(f"All players connected! Player {turn}'s turn.\n")
+            playerNum = data.get("playerNum")
+            initializeCards = currGame.players[playerNum].cards
+            broadcast_message({"playerNum": playerNum, "playerCards": initializeCards, "isGameRunning": True})
+            
             time.sleep(1)
             start = 1
     return start
@@ -56,105 +56,75 @@ def handle_client(conn, addr, client):
     
     while True:
         try:
-            message =pickle.loads(client_socket.recv(65535))
+            message = pickle.loads(client_socket.recv(65535))
             #Remove once start conditions works with GUI
             token = message.get("token")
             data = message.get("data")
-            if(token == "INITIALIZE"):
-                playerNum = data.get("playerNum")
-                initializeCards = currGame.players[playerNum].cards
-                
-
-                broadcast_message({"playerNum": playerNum, "playerCards": initializeCards, "isGameRunning": True})
-
-            elif(token=="PLACE"):
-                turn_taken=1
-                playerNum = data.get("playerNum")
-                cardIdx = data.get("cardIdx")
-              
-                card =currGame.placePlayerCard(playerNum, cardIdx)
-               
-                broadcast_message({"playerNum": playerNum, "placedCard": card, "isGameRunning": True})
-                         
-
-            if(token == "DRAW"):
-                turn_taken=1
-                playerNum = data.get("playerNum")
-                card = currGame.drawCardForPlayer(playerNum)
-             
-                ##If we use deckLength
-                # deckLength = len(currGame.players[playerNum].cards)
-                # broadcast_message({"playerNum": playerNum, "deckLength": deckLength, "isGameRunning": True})
-
-                broadcast_message({"playerNum": playerNum, "drawnCard": card, "isGameRunning": True})
-
-
-            # # message = client_socket.recv(1024).decode() #can replace with conn
-            # if not message:   
-            #     print(f"Client disconnected")
-            #     raise ConnectionResetError(f"Player has disconnected.")
             
-            # ## here for now
-            # if (message == 'start game'):
-            #     start = check_start_conditions(client_socket, start, currGame.turns)
-
-            # if (start == 0):
-            #     with lock:
-            #         ## only starts when we have enough people
-            #         start = check_start_conditions(client_socket, start, currGame.turns)
-                    
-            # if start == 1:
-            #     ## for when uno calling is possible  - or have it open all the time
-            #         # if one person has one card:
-            #         #     anyone can press the uno button but only the uno button
-            #     # if message == 'UNO':
-            #     #         broadcast_message("Player "+ str(client_num) + " called UNO\n")
+            if not message:   
+                print(f"Client disconnected")
+                raise ConnectionResetError(f"Player has disconnected.")
+            
+            if (token == 'START GAME'):
+                start = check_start_conditions(client_socket, start, currGame.turns, data)
                 
-            #     with lock:
-            #         print(token)
-            #         print(data)
-            #         if currGame.turns != client_num:
-            #             print("client_num", client_num)
-            #             ## sents a message only to that socket if it is not their turn
-            #             # client_socket.sendall("It's not your turn!\n")
-            #             time.sleep(1)
-            #             continue
+            if (start == 0):
+                with lock:
+                    ## only starts when we have enough people
+                    start = check_start_conditions(client_socket, start, currGame.turns)
+                
+            
+            if start == 1:
+                
+                # if(token == "INITIALIZE"):
+                    # playerNum = data.get("playerNum")
+                    # initializeCards = currGame.players[playerNum].cards
+                    # broadcast_message({"playerNum": playerNum, "playerCards": initializeCards, "isGameRunning": True})
+                
+                with lock:
+                    
+                    if currGame.turns != client_num:
+                        print("client_num", client_num)
+                        ## sents a message only to that socket if it is not their turn
+                        message = "It's not your turn!\n"
+                        client_socket.sendall(pickle.dumps(message))
+                        time.sleep(1)
+                        continue
+                    
+                    if currGame.turns == client_num:
                         
-            #         ## if it is the turn of the correct player
-            #         if currGame.turns == client_num:
+                        if (token=="PLACE"):
+                            turn_taken=1
+                            playerNum = data.get("playerNum")
+                            cardIdx = data.get("cardIdx")
+                        
+                            card =currGame.placePlayerCard(playerNum, cardIdx) ## needs to be comepared with the last card 
+                        
+                            broadcast_message({"playerNum": playerNum, "placedCard": card, "isGameRunning": True})
+                                    
 
-            #             if(token=="PLACE"):
-            #                 turn_taken=1
-            #                 playerNum = data.get("playerNum")
-            #                 cardIdx = data.get("cardIdx")
-            #                 placedCard =currGame.placePlayerCard(playerNum, cardIdx)
+                        if(token == "DRAW"):
+                            turn_taken=1
+                            playerNum = data.get("playerNum")
+                            card = currGame.drawCardForPlayer(playerNum)
+                        
+                            ##If we use deckLength
+                            # deckLength = len(currGame.players[playerNum].cards)
+                            # broadcast_message({"playerNum": playerNum, "deckLength": deckLength, "isGameRunning": True})
 
-            #                 broadcast_message({"playerNum": playerNum, "card": placedCard})
-                            
-            #                 #Tell other clients the action taken
-
-            #             if(token == "DRAW"):
-            #                 print(message)
-            #                 turn_taken=1
-            #                 playerNum = data.get("playerNum")
-            #                 currGame.drawCardForPlayer(playerNum)
-                           
-            #                 deckLength = len(currGame.players[playerNum].cards)
-            #                 broadcast_message({"playerNum": playerNum, "deckLength": deckLength})
-
-
+                            broadcast_message({"playerNum": playerNum, "drawnCard": card, "isGameRunning": True})
                                 
-            #     if turn_taken == 1:
+                if turn_taken == 1:
                     
-            #         with lock:
+                    with lock:
                     
-            #             if currGame.turns == len(clients):
-            #                 currGame.turns = 1
-            #             else:
-            #                 currGame.turns = currGame.turns + 1
-            #                 print("currGame.turns", currGame.turns)
-            #                 turn_taken = 0
-            #             # broadcast_message(f"It is now Player {currGame.turns}'s turn\n")
+                        if currGame.turns == len(clients):
+                            currGame.turns = 1
+                        else:
+                            currGame.turns = currGame.turns + 1
+                            print("currGame.turns", currGame.turns)
+                            turn_taken = 0
+                        # broadcast_message(f"It is now Player {currGame.turns}'s turn\n")
 
         
         except (socket.error, ConnectionResetError) as e:
@@ -213,4 +183,3 @@ if __name__ == "__main__":
     main()
 
     
-  

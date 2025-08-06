@@ -104,6 +104,8 @@ class ClientState:
                         self.currentPlayerTurn = val
                     elif idx == "drawnCard":
                         self.givenCards.append(val)
+                    elif idx == "stargame":
+                        print('start')
                      
                     elif idx == "placedCard":
                         for card in self.givenCards:
