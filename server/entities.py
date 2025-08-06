@@ -44,7 +44,7 @@ class Click:
         self.instructions = False
         self.credits = False
         self.uno = False
-        self.hand = [0,0,0,0,0,0,0,0,0,0, 0, 0] ## assume can't have over 12 cards
+        self.hand = [0] * 12 ## assume can't have over 12 cards
 
     def clicked(self, btnType):
         self.reset()
