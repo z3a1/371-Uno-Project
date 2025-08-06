@@ -84,6 +84,8 @@ class GUI:
             self.clientManager.handleSend("DRAW", {"playerNum": self.clientManager.playerID})
         elif(payload == "INITIALIZE"):
             self.clientManager.handleSend("INITIALIZE", {"playerNum": self.clientManager.playerID})
+        elif(payload == "START GAME"):
+            self.clientManager.handleSend("START GAME", {"playerNum": self.clientManager.playerID})
         
       
     def sendCardToServer(self, card):
