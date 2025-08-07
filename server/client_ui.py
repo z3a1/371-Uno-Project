@@ -31,19 +31,23 @@ class GUI:
     def handleMenuBtn(self,event):
         # if hasattr(event, 'widget') and event.widget.widgetName == 'button':
         #     return
-        print(event.widget.widgetName)
-        print(self.clickState.menu, self.clickState.instructions, self.clickState.joinWaitingRoom)
-        if event.widget:
-            if event.widget.widgetName == 'button':
-                if self.clickState.joinWaitingRoom:
-                    waiting_room(self.root,self.clientManager.numOfPlayers, self.clickState)
-                if self.clickState.credits:
-                    print_credits(self.root,0,self.clickState)
-                if self.clickState.menu:
-                    print_menu(self.root, self.clickState)
-                if self.clickState.instructions:
-                    print_instructions(self.root,0,self.clickState)
-                self.clickState.reset()
+        if self.clickState.joinWaitingRoom:
+            waiting_room(self.root,2, self.clickState)
+        elif self.clickState.credits:
+            print_credits(self.root,0,self.clickState)
+        elif self.clickState.menu:
+            print_menu(self.root, self.clickState)
+        elif self.clickState.instructions:
+            print_instructions(self.root,0,self.clickState)
+        elif self.clickState.startGame:
+            print_board(self.root, 
+                        self.clientManager.playerObj,
+                        self.clientManager.currentPlayerTurn, 
+                        self.clientManager.lastPlayedCard, 
+                        self.clientManager.otherPlayerCards, 
+                        self.clientManager.numOfPlayers, 
+                        self.clickState)
+        self.clickState.reset()
         
         self.clientManager.handleRecv()
     

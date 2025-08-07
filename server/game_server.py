@@ -166,7 +166,7 @@ def listen(s):
     while True:
         conn, addr = s.accept()
         print("Player Added: ", addr)
- 
+        
 
         client_num += 1
         currGame.numOfPlayers += 1
