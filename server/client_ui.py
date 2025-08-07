@@ -8,13 +8,6 @@ from clientState import ClientState
 HOST = '127.0.0.1'
 PORT = 53333
 
-# def receive_data(s):
-#     while True:
-#         data = s.recv(1024).decode()
-#         if not data:
-#             break
-#         print(data)
-
 class GUI:
     def __init__(self):
         # Window init
@@ -26,45 +19,10 @@ class GUI:
 
         self.clientManager = ClientState()
         self.clientManager.onGameRecv = self.checkRecv
-      
-        self.timer = 10
-        self.isPauseTimer = False
-        self.givenCards = []
-        self.cardBtnArr = []
-        # self.playerNum = 0
-
-        self.style.configure(self.root, background = "red")
-        self.style.configure(self.root, background = "blue")
-        self.style.configure(self.root, background = "green")
-        self.style.configure(self.root, background = "yellow")
         
 
         # self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.socket.connect((HOST,PORT))
-
-
-        self.label = ttk.Label(self.root, text="This is a Tkinter.Ttk Label")
-        self.label.pack()
-
-        self.message = tk.StringVar()
-
-
-        self.entry = ttk.Entry(self.root,textvariable=self.message)
-        self.entry.pack()
-        
-        self.entryBtn = ttk.Button(self.root,text = "Send to Server", command=self.sendMessageToServer)
-        self.entryBtn.pack()
-
-        self.button = ttk.Button(self.root, text="Click Me To Pause", command=self.pauseTimer)
-        self.button.pack()
-
-        self.timerStrContainer = tk.StringVar(master=self.root,value=str(self.timer))
-
-        self.timerLabel = tk.Label(self.root,textvariable=self.timerStrContainer)
-        self.timerLabel.pack()
-
-        #Init Timer
-        self.root.after(1000,self.updateTimer)
 
         # Run the application
         self.root.mainloop()

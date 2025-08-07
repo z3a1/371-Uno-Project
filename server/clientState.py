@@ -6,10 +6,9 @@ PORT = 53333
 
 class ClientState:
     def __init__(self, playerNum: int = 0):
-        #Player Cards
         self.isGameRunning = False
-        # Key: PlayerNum, Val: Card Array
-        self.givenCards = {}
+        # The assigned player object for the given client
+        self.playerObj = {}
         # Card Object of the last card played 
         self.lastPlayedCard = None
         # Map Set Of Player Num and Cards
@@ -64,57 +63,57 @@ class ClientState:
         # Recieve the data then extract the map and determine if the val for the key is data
         # Key: lastPlayed Card, otherplayer card states, is game done, current turn of player
         # Values: Card, List[Tuple(PlayerNum, Card)], Bool, Int
-        # assert(self.isServerDisconnect())
-        # res = pickle.loads(self.cSocket.recv(65535))
-        # token = res["token"]
-        # data = res["data"]
-        # self.handleToken(token, data)
+        assert(self.isServerDisconnect())
+        res = pickle.loads(self.cSocket.recv(65535))
+        token = res["token"]
+        data = res["data"]
+        self.handleToken(token, data)
 
-        # gameStillRunning = res["isGameRunning"]
-        # if gameStillRunning:
-        #     for i, (idx,val) in enumerate(res.items()):
-        #         if idx == "lastPlayedCard":
-        #             self.lastPlayedCard = val
-        #         elif idx == "playerCards":
-        #             self.givenCards = val
-        #         elif idx == "isGameDone":
-        #             self.isGameRunning = val
-        #         elif idx == "currPlayerTurn":
-        #             self.currentPlayerTurn = val
-        # else:
-        #     self.isGameRunning = False
-        while self.isGameRunning:
-            res = pickle.loads(self.cSocket.recv(65535))
+        gameStillRunning = res["isGameRunning"]
+        if gameStillRunning:
+            for i, (idx,val) in enumerate(res.items()):
+                if idx == "lastPlayedCard":
+                    self.lastPlayedCard = val
+                elif idx == "playerCards":
+                    self.givenCards = val
+                elif idx == "isGameDone":
+                    self.isGameRunning = val
+                elif idx == "currPlayerTurn":
+                    self.currentPlayerTurn = val
+        if self.onGameRecv:
+            self.onGameRecv()
+        else:
+            self.isGameRunning = False
+        # while self.isGameRunning:
+        #     res = pickle.loads(self.cSocket.recv(65535))
            
-            playerNum = res["playerNum"] 
+        #     playerNum = res["playerNum"] 
           
 
-            gameStillRunning = res["isGameRunning"]
-            if gameStillRunning:
-                for i, (idx,val) in enumerate(res.items()):
-                    if idx == "lastPlayedCard":
-                        self.lastPlayedCard = val
-                    elif idx == "playerCards":
-                        self.givenCards =val
-                        # print(val)
-                    elif idx == "isGameDone":
-                        self.isGameRunning = val
-                    elif idx == "currPlayerTurn":
-                        self.currentPlayerTurn = val
-                    elif idx == "drawnCard":
-                        self.givenCards.append(val)
-                    elif idx == "stargame":
-                        print('start')
+        #     gameStillRunning = res["isGameRunning"]
+        #     if gameStillRunning:
+        #         for i, (idx,val) in enumerate(res.items()):
+        #             if idx == "lastPlayedCard":
+        #                 self.lastPlayedCard = val
+        #             elif idx == "playerCards":
+        #                 self.givenCards =val
+        #                 # print(val)
+        #             elif idx == "isGameDone":
+        #                 self.isGameRunning = val
+        #             elif idx == "currPlayerTurn":
+        #                 self.currentPlayerTurn = val
+        #             elif idx == "drawnCard":
+        #                 self.givenCards.append(val)
                      
-                    elif idx == "placedCard":
-                        for card in self.givenCards:
+        #             elif idx == "placedCard":
+        #                 for card in self.givenCards:
                           
-                            if(card == val):
-                                self.givenCards.remove(val)
-                print(self.givenCards)             
+        #                     if(card == val):
+        #                         self.givenCards.remove(val)
+        #         print(self.givenCards)             
 
-                if self.onGameRecv:
-                    self.onGameRecv()
-            else:
-                self.isGameRunning = False
+        #         if self.onGameRecv:
+        #             self.onGameRecv()
+        #     else:
+        #         self.isGameRunning = False
          
