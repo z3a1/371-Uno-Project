@@ -15,6 +15,7 @@ lock = Lock()
 currGame = GameState()
 start = 0 ## = 1 if game as started 
 
+
 def broadcast_message(message):
     for client in clients:
         client_socket = client['client_socket']
@@ -30,13 +31,14 @@ def broadcast_message(message):
     
 
 def check_start_conditions(client_socket, start, turn, data):
-    if len(clients) == 0: ## so that one player cannot start the game
+    if len(clients) == 1: ## so that one player cannot start the game
         client_socket.sendall("Not enough players\n")
     else:
         start = 1 
         ##if users want a game with 2 or 3 players must press start
-        if start == 1 or client_num == 4:
-            # broadcast_message(f"All players connected! Player {turn}'s turn.\n")
+        if start == 1: # or client_num == 4
+            currGame.gameStart = True
+
             playerNum = data.get("playerNum")
             initializeCards = currGame.players[playerNum].cards
             broadcast_message({"playerNum": playerNum, "playerCards": initializeCards, "isGameRunning": True})
@@ -53,8 +55,10 @@ def handle_client(conn, addr, client):
     
     # if the player makes a valid action - changes to one to indicate to change who's turn it is
     turn_taken = 0 
-    
+
+    ## this is where you join the game 
     while True:
+        
         try:
             message = pickle.loads(client_socket.recv(65535))
             #Remove once start conditions works with GUI
@@ -65,22 +69,28 @@ def handle_client(conn, addr, client):
                 print(f"Client disconnected")
                 raise ConnectionResetError(f"Player has disconnected.")
             
-            if (token == 'START GAME'):
-                start = check_start_conditions(client_socket, start, currGame.turns, data)
+            ## OUTSIDE GAME  
+            if start == 0 and currGame.gameStart == False:
+                ## join game - puts the player in the waiting room and adds them to client list 
+                if (token == 'JOIN GAME'):
+                    client_num += 1
+                    currGame.numOfPlayers += 1
+                    currGame.addNewPlayer()
+                    client = {'client_num': client_num,'client_socket': conn}
+                    clients.append(client)
                 
-            if (start == 0):
+                ## start game - prompts the game to start 
+                if (token == 'START GAME'):
+                    start = check_start_conditions(client_socket, start, currGame.turns, data)
+            
                 with lock:
                     ## only starts when we have enough people
                     start = check_start_conditions(client_socket, start, currGame.turns)
                 
             
-            if start == 1:
-                
-                # if(token == "INITIALIZE"):
-                    # playerNum = data.get("playerNum")
-                    # initializeCards = currGame.players[playerNum].cards
-                    # broadcast_message({"playerNum": playerNum, "playerCards": initializeCards, "isGameRunning": True})
-                
+            ## IN GAME 
+            if start == 1 and currGame.gameStart == True:
+
                 with lock:
                     
                     if currGame.turns != client_num:
@@ -93,6 +103,13 @@ def handle_client(conn, addr, client):
                     
                     if currGame.turns == client_num:
                         
+                        
+                        ## needs to be outside the lock 
+                        if (token == "UNO"):
+                            playerNum = data.get("playerNum")
+                            ## create an uno function in the client state
+                            
+                        
                         if (token=="PLACE"):
                             turn_taken=1
                             playerNum = data.get("playerNum")
@@ -101,7 +118,13 @@ def handle_client(conn, addr, client):
                             card =currGame.placePlayerCard(playerNum, cardIdx) ## needs to be comepared with the last card 
                         
                             broadcast_message({"playerNum": playerNum, "placedCard": card, "isGameRunning": True})
-                                    
+                            
+                            winner = currGame.checkWinner()
+                            if winner != -1:
+                                currGame.gameStart = False
+                                start = 0
+                                broadcast_message({"winner": winner,  "isGameRunning": False})
+                                
 
                         if(token == "DRAW"):
                             turn_taken=1
@@ -113,6 +136,7 @@ def handle_client(conn, addr, client):
                             # broadcast_message({"playerNum": playerNum, "deckLength": deckLength, "isGameRunning": True})
 
                             broadcast_message({"playerNum": playerNum, "drawnCard": card, "isGameRunning": True})
+                            
                                 
                 if turn_taken == 1:
                     
@@ -129,7 +153,7 @@ def handle_client(conn, addr, client):
         
         except (socket.error, ConnectionResetError) as e:
             print(f"Error during data exchange: {e}")
-            if (start == 1):
+            if (start == 1 and currGame.gameStart == True):
                 # broadcast_message("A PLAYER DISCONNECTED, CLOSING GAME. Restart the game to play again\n")
                 with lock:
                     print('in lock')
@@ -145,7 +169,7 @@ def handle_client(conn, addr, client):
                             
                             # clients.remove(client)   
                 print('out of lock')
-            if (start == 0):
+            if (start == 0 and currGame.gameStart == False):
                 pass
             return 
             
@@ -157,16 +181,8 @@ def listen(s):
     while True:
         conn, addr = s.accept()
         print("Player Added: ", addr)
- 
-
-        client_num += 1
-        currGame.numOfPlayers += 1
-        currGame.addNewPlayer()
-        client = {'client_num': client_num,'client_socket': conn}
-        clients.append(client)
- 
        
-        Thread(target=handle_client, args = (conn, addr, client)).start()
+        Thread(target=handle_client, args = (conn, addr)).start()
 
 
 def main():
