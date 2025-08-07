@@ -21,10 +21,14 @@ class ClientState:
         self.error = False ##if someone disconnects, they get error screen
         # Function Call To Check if we need to recieve anything
         self.unoCaught = [0,0,0,0]
+
+        self.uno = -1
+
         # currTurn: Whos current turn is it, turns: How many turns the game has taken
         self.turns = 0
         self.menu = True
         self.gameStart = False
+
 
 
     

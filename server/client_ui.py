@@ -28,6 +28,7 @@ class GUI:
         self.clientManager.handleRecv()
         self.root.mainloop()
 
+        
     def handleMenuBtn(self,event):
         # if hasattr(event, 'widget') and event.widget.widgetName == 'button':
         #     return
@@ -50,7 +51,7 @@ class GUI:
         self.clickState.reset()
         
         self.clientManager.handleRecv()
-    
+
 
 if __name__ == "__main__":
     GUI()
