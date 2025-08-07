@@ -41,7 +41,7 @@ def check_start_conditions(client_socket, start, turn, data):
 
             playerNum = data.get("playerNum")
             initializeCards = currGame.players[playerNum].cards
-            broadcast_message({"playerNum": playerNum, "playerCards": initializeCards, "isGameRunning": True})
+            broadcast_message({"playerNum": playerNum, "startGame": True, "playerCards": initializeCards, "isGameRunning": True})
             
             time.sleep(1)
             start = 1
@@ -76,7 +76,7 @@ def handle_client(conn, addr, client):
                     currGame.numOfPlayers += 1
                     currGame.addNewPlayer()
                     clients.append(client)
-                    broadcast_message({"playerNum": client_num, "isGameRunning": False})
+                    broadcast_message({"playerNum": client_num, "waitingRoom": True, "isGameRunning": False})
                 
                 ## start game - prompts the game to start 
                 if (token == 'START GAME'):

@@ -24,6 +24,7 @@ class ClientState:
         # Function Call To Check if we need to recieve anything
         self.handleRecv()
         self.unoCaught = [0,0,0,0]
+        self.uno = -1
 
     
     def isServerDisconnect(self) -> bool:
@@ -66,15 +67,21 @@ class ClientState:
         # Values: Card, List[Tuple(PlayerNum, Card)], Bool, Int
 
         # assert(self.isServerDisconnect())
-        
-        res = pickle.loads(self.cSocket.recv(65535))
-        for i, (idx,val) in enumerate(res.items()):
-            if idx == "startgame":
-                self.isGameRunning = val
+        if(self.isGameRunning):
+            res = pickle.loads(self.cSocket.recv(65535))
+            for i, (idx,val) in enumerate(res.items()):
+                if idx == "waitingRoom":
+                    self.waitingRoom = val
+                elif idx == "startGame":
+                    self.isGameRunning = val
+                elif idx == "playerCards":
+                    self.givenCards =val
+                     
 
         while self.isGameRunning:
             res = pickle.loads(self.cSocket.recv(65535))
-           
+            if(self.isGameRunning):
+                print("self.isGameRunning")
             playerNum = res["playerNum"] 
 
 
@@ -83,17 +90,15 @@ class ClientState:
                 for i, (idx,val) in enumerate(res.items()):
                     if idx == "lastPlayedCard":
                         self.lastPlayedCard = val
-                    elif idx == "playerCards":
-                        self.givenCards =val
-                        # print(val)
+                    
                     elif idx == "isGameDone":
                         self.isGameRunning = val
                     elif idx == "currPlayerTurn":
                         self.currentPlayerTurn = val
                     elif idx == "drawnCard":
                         self.givenCards.append(val)
-                    # elif idx == "uno":
-
+                    elif idx == "uno":
+                        self.uno = val
                     elif idx == "placedCard":
                         for card in self.givenCards:
                           
