@@ -69,7 +69,7 @@ def print_board(root, player, currTurn, lastCard, card_nums, numPlayers, clk):
     screen_col = "deep sky blue"
     main_font = tk.font.Font(family="Arial", size=24, weight=tk.NORMAL)
     _screen_set_up(root, "Main Game", main_font, screen_col)
-    _turn_info(root, currTurn, player.playerNum, screen_col)
+    _turn_info(root, currTurn, player['playerNum'], screen_col)
 
     #print "face down deck" in centre
     frameCentre = tk.Frame(root, bg=screen_col)

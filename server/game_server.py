@@ -32,8 +32,10 @@ def broadcast_message(message):
     
 
 def check_start_conditions(client_socket, start, turn, data):
+    global currGame
     if len(clients) == 1: ## so that one player cannot start the game
-        client_socket.sendall("Not enough players\n")
+        #TODO: Should be client send all xD
+        client_socket.sendall(pickle.dumps({"Error": "Not enough players\n"}))
     else:
         start = 1 
         ##if users want a game with 2 or 3 players must press start
@@ -41,8 +43,10 @@ def check_start_conditions(client_socket, start, turn, data):
             currGame.gameStart = True
 
             playerNum = data.get("playerNum")
-            initializeCards = currGame.players[playerNum].cards
-            broadcast_message({"playerNum": playerNum, "startGame": True, "playerCards": initializeCards, "isGameRunning": True})
+            print(playerNum)
+            # Player number has to be offset because of how arrays start!!!
+            initializeCards = currGame.players[playerNum - 1].cards
+            broadcast_message({"playerNum": playerNum, "startGame": True, "playerCards": initializeCards, "lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": True})
             
             time.sleep(1)
             start = 1
@@ -51,6 +55,7 @@ def check_start_conditions(client_socket, start, turn, data):
 def handle_client(conn, addr, client):
     global currGame
     global start
+    global client_num
     client_socket = client['client_socket']
     
     # if the player makes a valid action - changes to one to indicate to change who's turn it is

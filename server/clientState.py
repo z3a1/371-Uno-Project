@@ -9,14 +9,15 @@ class ClientState:
         self.isGameRunning = False
         # The assigned player object for the given client
         self.playerObj = {}
+        self.playerObj["playerNum"] = playerNum
         # Card Object of the last card played 
-        self.lastPlayedCard = None
+        self.lastPlayedCard = {}
         # Map Set Of Player Num and Cards -> self.cardLengths
         self.otherPlayerCards = []
         self.currentPlayerTurn = 0
-        self.playerID = playerNum
         self.numOfPlayers = 0
-        self.cSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.cSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.cSocket.connect((HOST,PORT))
         self.waitingRoom = False ##player can choose to enter waiting for game
         self.error = False ##if someone disconnects, they get error screen
         # Function Call To Check if we need to recieve anything
@@ -29,21 +30,6 @@ class ClientState:
         self.menu = True
         self.gameStart = False
 
-
-
-    
-    def isServerDisconnect(self) -> bool:
-        #Try checking if the socket can still recieve
-        #Ignore if the data is 0 and check if exception happens
-        try:
-            res = pickle.loads(self.cSocket.recv(65535))
-            if res:
-                return True
-        except Exception as e:
-            print(e)
-            self.isGameRunning = False
-            return False
-
     
     # Token and the data
     def handleSend(self,action,data):
@@ -51,7 +37,7 @@ class ClientState:
         # In game tokens: [Drawing, or Placing card]
         # Waiting: [NoneType], Ready: [NoneType], Playing: [Card Objects]
         #Assert fails if client is not connected
-        assert(not self.isServerDisconnect())
+        # assert(not self.isServerDisconnect())
         payload = pickle.dumps({"token": action, "data": data})
         self.cSocket.sendall(payload)
 
@@ -72,30 +58,31 @@ class ClientState:
         # Values: Card, List[Tuple(PlayerNum, Card)], Bool, Int
 
         # assert(self.isServerDisconnect())
-        if(self.isGameRunning):
+        if(not self.isGameRunning):
             res = pickle.loads(self.cSocket.recv(65535))
             for i, (idx,val) in enumerate(res.items()):
                 if idx == "waitingRoom":
                     self.waitingRoom = val
                 elif idx == "startGame":
                     self.isGameRunning = val
+                elif idx == "playerNum":
+                    self.playerObj["playerNum"] = val
+                    self.numOfPlayers = val
                 elif idx == "playerCards":
                     self.givenCards =val
-                     
+                    
 
         while self.isGameRunning:
             res = pickle.loads(self.cSocket.recv(65535))
             if(self.isGameRunning):
                 print("self.isGameRunning")
-            playerNum = res["playerNum"] 
-
-
+            print(res)
             gameStillRunning = res["isGameRunning"]
             if gameStillRunning:
                 for i, (idx,val) in enumerate(res.items()):
                     if idx == "lastPlayedCard":
+                        print(val)
                         self.lastPlayedCard = val
-                    
                     elif idx == "isGameDone":
                         self.isGameRunning = val
                     elif idx == "currPlayerTurn":
@@ -106,12 +93,13 @@ class ClientState:
                         self.uno = val
                     elif idx == "placedCard":
                         for card in self.givenCards:
-                          
+                        
                             if(card == val):
                                 self.givenCards.remove(val)
-                print(self.givenCards)             
+                    elif idx == "playerCards":
+                        self.playerObj["playerCards"] = val
 
-                if self.onGameRecv:
-                    self.onGameRecv()
+                # if self.onGameRecv:
+                #     self.onGameRecv()
             else:
                 self.isGameRunning = False

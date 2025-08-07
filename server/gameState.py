@@ -18,7 +18,9 @@ class GameState:
         self.waitingRoom = False ##player can choose to enter waiting for game
         self.gameStart = False ##game has offically started
         self.error = False ##if someone disconnects, they get error screen
-        self.lastCardPlayed = None 
+        cardVal = randint(self.lowestCard,self.highestCard)
+        colorIdx = randint(self.lowestColorIdx,self.highestColorIdx)
+        self.lastCardPlayed = Card(self.colors[colorIdx],"number",cardVal) 
 
     # Used to generate a random deck depending on the seed, generating the value of the card and what color it can have
     def initializeDeck(self) -> list:

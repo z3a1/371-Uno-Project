@@ -25,7 +25,6 @@ class GUI:
         self.root.bind("<Button-1>",self.handleMenuBtn)
         # Fails because non blocking operation isn't completed, force it to fail on init
         # Then call it again when trying to join waiting lobby
-        self.clientManager.handleRecv()
         self.root.mainloop()
 
         
@@ -33,7 +32,11 @@ class GUI:
         # if hasattr(event, 'widget') and event.widget.widgetName == 'button':
         #     return
         if self.clickState.joinWaitingRoom:
-            waiting_room(self.root,2, self.clickState)
+            print(self.clientManager.playerObj["playerNum"])
+            self.clientManager.handleSend(action="JOIN GAME",data={})
+            print(self.clientManager.numOfPlayers)
+            self.clientManager.handleRecv()
+            waiting_room(self.root,self.clientManager.numOfPlayers, self.clickState)
         elif self.clickState.credits:
             print_credits(self.root,0,self.clickState)
         elif self.clickState.menu:
@@ -41,6 +44,11 @@ class GUI:
         elif self.clickState.instructions:
             print_instructions(self.root,0,self.clickState)
         elif self.clickState.startGame:
+            print(self.clientManager.playerObj["playerNum"])
+            self.clientManager.isGameRunning = True
+            self.clientManager.handleSend(action="START GAME",data={"playerNum": self.clientManager.playerObj["playerNum"]})
+            self.clientManager.handleRecv()
+            print(self.clientManager.lastPlayedCard)
             print_board(self.root, 
                         self.clientManager.playerObj,
                         self.clientManager.currentPlayerTurn, 
@@ -48,9 +56,14 @@ class GUI:
                         self.clientManager.otherPlayerCards, 
                         self.clientManager.numOfPlayers, 
                         self.clickState)
+        elif self.clickState.drawCard:
+            pass
+        else:
+            for state in self.clickState.hand:
+                if state:
+                    # Handle Send
+                    break
         self.clickState.reset()
-        
-        self.clientManager.handleRecv()
 
 
 if __name__ == "__main__":
