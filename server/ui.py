@@ -33,7 +33,7 @@ def print_menu(root, clk):
     frame = tk.Frame(root, bg="light yellow")
     frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER) 
 
-    join_game = tk.Button(frame, text="Join Game", font=menu_font, command=lambda: clk.clicked('joinedWaitingRoom'))
+    join_game = tk.Button(frame, text="Join Game", font=menu_font, command=lambda: clk.clicked('joinWaitingRoom'))
     join_game.grid(row = 0, column = 0, sticky = W, pady = 5)
     instructions = tk.Button(frame, text="Instructions", font=menu_font, command=lambda: clk.clicked('instructions'))
     instructions.grid(row = 1, column = 0, sticky = W, pady = 5)

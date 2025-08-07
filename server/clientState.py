@@ -6,25 +6,30 @@ PORT = 53333
 
 class ClientState:
     def __init__(self, playerNum: int = 0):
-        #Player Cards
         self.isGameRunning = False
-        # Key: PlayerNum, Val: Card Array
-        self.givenCards = {}
+        # The assigned player object for the given client
+        self.playerObj = {}
         # Card Object of the last card played 
         self.lastPlayedCard = None
-        # Map Set Of Player Num and Cards
-        self.otherPlayerCards = None
+        # Map Set Of Player Num and Cards -> self.cardLengths
+        self.otherPlayerCards = []
         self.currentPlayerTurn = 0
         self.playerID = playerNum
         self.numOfPlayers = 0
-        self.cSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.cSocket.connect((HOST,PORT))
+        self.cSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.waitingRoom = False ##player can choose to enter waiting for game
         self.error = False ##if someone disconnects, they get error screen
         # Function Call To Check if we need to recieve anything
-        self.handleRecv()
         self.unoCaught = [0,0,0,0]
+
         self.uno = -1
+
+        # currTurn: Whos current turn is it, turns: How many turns the game has taken
+        self.turns = 0
+        self.menu = True
+        self.gameStart = False
+
+
 
     
     def isServerDisconnect(self) -> bool:
@@ -32,7 +37,7 @@ class ClientState:
         #Ignore if the data is 0 and check if exception happens
         try:
             res = pickle.loads(self.cSocket.recv(65535))
-            if not res or res:
+            if res:
                 return True
         except Exception as e:
             print(e)
@@ -46,7 +51,7 @@ class ClientState:
         # In game tokens: [Drawing, or Placing card]
         # Waiting: [NoneType], Ready: [NoneType], Playing: [Card Objects]
         #Assert fails if client is not connected
-        assert(self.isServerDisconnect())
+        assert(not self.isServerDisconnect())
         payload = pickle.dumps({"token": action, "data": data})
         self.cSocket.sendall(payload)
 
@@ -110,4 +115,3 @@ class ClientState:
                     self.onGameRecv()
             else:
                 self.isGameRunning = False
-         
