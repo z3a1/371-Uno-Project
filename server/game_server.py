@@ -78,6 +78,7 @@ def handle_client(conn, addr, client):
                     currGame.addNewPlayer()
                     client = {'client_num': client_num,'client_socket': conn}
                     clients.append(client)
+                    broadcast_message({"playerNum": playerNum, "isGameRunning": False})
                 
                 ## start game - prompts the game to start 
                 if (token == 'START GAME'):

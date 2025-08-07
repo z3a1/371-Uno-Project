@@ -80,13 +80,16 @@ class GUI:
         # TODO: Call Client State and get token
         # pass
         payload = self.message.get()
-        if(payload == "DRAW"):
-            self.clientManager.handleSend("DRAW", {"playerNum": self.clientManager.playerID})
-        elif(payload == "INITIALIZE"):
-            self.clientManager.handleSend("INITIALIZE", {"playerNum": self.clientManager.playerID})
+        if (payload == "JOIN GAME"):
+            self.clientManager.handleSend("JOIN GAME", {"playerNum": self.clientManager.playerID})
         elif(payload == "START GAME"):
             self.clientManager.handleSend("START GAME", {"playerNum": self.clientManager.playerID})
-        
+        elif(payload == "DRAW"):
+            self.clientManager.handleSend("DRAW", {"playerNum": self.clientManager.playerID})
+        elif(payload == "PLACE"):
+            self.clientManager.handleSend("PLACE", {"playerNum": self.clientManager.playerID})
+        elif(payload == "UNO"):
+            self.clientManager.handleSend("UNO", {"playerNum": self.clientManager.playerID})
       
     def sendCardToServer(self, card):
         # if(card.type == "number"):
