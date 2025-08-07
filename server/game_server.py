@@ -50,7 +50,6 @@ def check_start_conditions(client_socket, start, turn, data):
 def handle_client(conn, addr, client):
     global currGame
     global start
-    client_num = client['client_num']
     client_socket = client['client_socket']
     
     # if the player makes a valid action - changes to one to indicate to change who's turn it is
@@ -76,21 +75,21 @@ def handle_client(conn, addr, client):
                     client_num += 1
                     currGame.numOfPlayers += 1
                     currGame.addNewPlayer()
-                    client = {'client_num': client_num,'client_socket': conn}
                     clients.append(client)
-                    broadcast_message({"playerNum": playerNum, "isGameRunning": False})
+                    broadcast_message({"playerNum": client_num, "isGameRunning": False})
                 
                 ## start game - prompts the game to start 
                 if (token == 'START GAME'):
                     start = check_start_conditions(client_socket, start, currGame.turns, data)
             
-                with lock:
-                    ## only starts when we have enough people
-                    start = check_start_conditions(client_socket, start, currGame.turns)
+                # with lock:
+                #     ## only starts when we have enough people
+                #     start = check_start_conditions(client_socket, start, currGame.turns)
                 
             
             ## IN GAME 
             if start == 1 and currGame.gameStart == True:
+                client_num = client['client_num']
 
                 with lock:
                     
@@ -182,8 +181,8 @@ def listen(s):
     while True:
         conn, addr = s.accept()
         print("Player Added: ", addr)
-       
-        Thread(target=handle_client, args = (conn, addr)).start()
+        client = {'client_num': client_num,'client_socket': conn}
+        Thread(target=handle_client, args = (conn, addr,client)).start()
 
 
 def main():
