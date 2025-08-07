@@ -2,6 +2,7 @@ import socket
 from threading import Thread
 import sys
 import os
+import pickle
 
 HOST = '127.0.0.1'
 PORT = 53333
@@ -11,7 +12,7 @@ def receive_data(s):
     while True:
         try:
             
-            data = s.recv(1024).decode()
+            data = pickle.loads(s.recv(65535))
             if not data:
                 break
             print(data)
@@ -34,7 +35,7 @@ def main():
             while True:
                 #token =
                 message = input()
-                s.sendall(message.encode())
+                s.sendall(pickle.dumps({"data": message}))
     except (ConnectionError, Exception) as e:
         print(f"Error connecting to the server: {e}")
         sys.exit(1)

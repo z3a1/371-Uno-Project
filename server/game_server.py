@@ -5,6 +5,7 @@ import time
 import pickle
 from gameState import GameState
 from entities import Player 
+import os
 
 HOST = '127.0.0.1'
 PORT = 53333 
@@ -147,8 +148,16 @@ def handle_client(conn, addr, client):
                 print('out of lock')
             if (start == 0):
                 pass
-            return 
-            
+            return
+        
+        # These were added just for the different test cases that a client closes their end
+        except EOFError as e:
+            # When client leaves, connection is still valid, catch the EOFError to force exit the server
+            print(e)
+            os._exit(1)
+        except socket.error as e:
+            print(e)
+            os._exit(1)
 
     # conn.close()
 

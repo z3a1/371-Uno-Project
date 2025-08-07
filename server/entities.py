@@ -23,6 +23,8 @@ class Player:
 
     def addCard(self,card):
         self.cards.append(card)
+
+
     
     def playCard(self,index):
         if index > len(self.cards) or index < 0:

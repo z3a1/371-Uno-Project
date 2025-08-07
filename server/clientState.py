@@ -11,18 +11,23 @@ class ClientState:
         self.playerObj = {}
         # Card Object of the last card played 
         self.lastPlayedCard = None
-        # Map Set Of Player Num and Cards
-        self.otherPlayerCards = None
+        # Map Set Of Player Num and Cards -> self.cardLengths
+        self.otherPlayerCards = []
         self.currentPlayerTurn = 0
         self.playerID = playerNum
         self.numOfPlayers = 0
         self.cSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.cSocket.connect((HOST,PORT))
+        self.cSocket.setblocking(False)
         self.waitingRoom = False ##player can choose to enter waiting for game
         self.error = False ##if someone disconnects, they get error screen
         # Function Call To Check if we need to recieve anything
-        self.handleRecv()
         self.unoCaught = [0,0,0,0]
+        # currTurn: Whos current turn is it, turns: How many turns the game has taken
+        self.turns = 0
+        self.menu = True
+        self.gameStart = False
+
 
     
     def isServerDisconnect(self) -> bool:
@@ -30,7 +35,7 @@ class ClientState:
         #Ignore if the data is 0 and check if exception happens
         try:
             res = pickle.loads(self.cSocket.recv(65535))
-            if not res or res:
+            if res:
                 return True
         except Exception as e:
             print(e)
@@ -44,7 +49,7 @@ class ClientState:
         # In game tokens: [Drawing, or Placing card]
         # Waiting: [NoneType], Ready: [NoneType], Playing: [Card Objects]
         #Assert fails if client is not connected
-        assert(self.isServerDisconnect())
+        assert(not self.isServerDisconnect())
         payload = pickle.dumps({"token": action, "data": data})
         self.cSocket.sendall(payload)
 
@@ -63,57 +68,51 @@ class ClientState:
         # Recieve the data then extract the map and determine if the val for the key is data
         # Key: lastPlayed Card, otherplayer card states, is game done, current turn of player
         # Values: Card, List[Tuple(PlayerNum, Card)], Bool, Int
-        assert(self.isServerDisconnect())
-        res = pickle.loads(self.cSocket.recv(65535))
-        token = res["token"]
-        data = res["data"]
-        self.handleToken(token, data)
+        # assert(self.isServerDisconnect())
 
-        gameStillRunning = res["isGameRunning"]
-        if gameStillRunning:
-            for i, (idx,val) in enumerate(res.items()):
-                if idx == "lastPlayedCard":
-                    self.lastPlayedCard = val
-                elif idx == "playerCards":
-                    self.givenCards = val
-                elif idx == "isGameDone":
-                    self.isGameRunning = val
-                elif idx == "currPlayerTurn":
-                    self.currentPlayerTurn = val
-        if self.onGameRecv:
-            self.onGameRecv()
-        else:
-            self.isGameRunning = False
-        # while self.isGameRunning:
-        #     res = pickle.loads(self.cSocket.recv(65535))
-           
-        #     playerNum = res["playerNum"] 
-          
+        # Try catch block needed, if it recieves BlockingIOError it should be just on init of the GUI
+        # Otherwise you can call it again
+        try:
+            print("Try")
+            res = pickle.load(self.cSocket.recv(65535))
+            token = res["token"]
+            data = res["data"]
+            self.handleToken(token, data)
 
-        #     gameStillRunning = res["isGameRunning"]
-        #     if gameStillRunning:
-        #         for i, (idx,val) in enumerate(res.items()):
-        #             if idx == "lastPlayedCard":
-        #                 self.lastPlayedCard = val
-        #             elif idx == "playerCards":
-        #                 self.givenCards =val
-        #                 # print(val)
-        #             elif idx == "isGameDone":
-        #                 self.isGameRunning = val
-        #             elif idx == "currPlayerTurn":
-        #                 self.currentPlayerTurn = val
-        #             elif idx == "drawnCard":
-        #                 self.givenCards.append(val)
-                     
-        #             elif idx == "placedCard":
-        #                 for card in self.givenCards:
-                          
-        #                     if(card == val):
-        #                         self.givenCards.remove(val)
-        #         print(self.givenCards)             
-
-        #         if self.onGameRecv:
-        #             self.onGameRecv()
-        #     else:
-        #         self.isGameRunning = False
-         
+            gameStillRunning = res["isGameRunning"]
+            if isinstance(gameStillRunning, bool) and gameStillRunning:
+                print("If stmt")
+                for i, (idx,val) in enumerate(res.items()):
+                    if idx == "lastPlayedCard":
+                        self.lastPlayedCard = val
+                    elif idx == "playerCards":
+                        self.givenCards =val
+                        # print(val)
+                    elif idx == "isGameDone":
+                        self.isGameRunning = val
+                    elif idx == "currPlayerTurn":
+                        self.currentPlayerTurn = val
+                    elif idx == "drawnCard":
+                        self.givenCards.append(val)
+                    elif idx == "menu":
+                        self.menu = val
+                    elif idx == "waitingRoom":
+                        self.waitingRoom = val
+                    elif idx == "gameStart":
+                        self.gameStart = val
+                    elif idx == "currTurn":
+                        self.currentPlayerTurn = val
+                    elif idx == "turns":
+                        self.turns = val
+                    elif idx == "placedCard":
+                        for card in self.givenCards:
+                            if(card == val):
+                                self.givenCards.remove(val)
+            if self.onGameRecv:
+                self.onGameRecv()
+            else:
+                self.isGameRunning = False
+        # Done if there is no data being recieved or sent from the server, continue running the UI until there is update
+        except (socket.error, BlockingIOError) as e:
+            print(e)
+            pass
