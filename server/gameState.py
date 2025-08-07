@@ -50,6 +50,12 @@ class GameState:
             if len(player.cards) == 0:
                 return player.playerNum
         return -1
+    
+    def checkUno(self) -> int:
+        for player in self.players:
+            if len(player.cards) == 1:
+                return player.playerNum
+        return -1
 
 
     def addNewPlayer(self) -> None:

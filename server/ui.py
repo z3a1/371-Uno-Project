@@ -296,36 +296,36 @@ def _if_turn(currTurn, pid):
 ##DEMO RUN#
 #DELETE FOR FINAL VERSION#
 
-"""
+# """
 
-clk = Click()
-root = tk.Tk()
+# clk = Click()
+# root = tk.Tk()
 
-#waiting_room(root, 6, clk)
-#game_res(root, False, clk)
-#print_menu(root, clk)
+# #waiting_room(root, 6, clk)
+# #game_res(root, False, clk)
+# #print_menu(root, clk)
 
-card1 = Card(color="red", val=0, cType="1")
-card2 = Card(color="blue", val=1, cType="4")
-card3 = Card(color="red", val=0, cType="7")
-card4 = Card(color="yellow", val=2, cType="8")
-card5 = Card(color="green", val=3, cType="1")
-lastCard = Card(color="yellow", val=2, cType="2")
+# card1 = Card(color="red", val=0, cType="1")
+# card2 = Card(color="blue", val=1, cType="4")
+# card3 = Card(color="red", val=0, cType="7")
+# card4 = Card(color="yellow", val=2, cType="8")
+# card5 = Card(color="green", val=3, cType="1")
+# lastCard = Card(color="yellow", val=2, cType="2")
 
-hand = [card1, card2, card3, card4, card5]
-cardNums = [5, 1, 4, 9]    
-player = Player(playerNum=2, cards=hand)
-player.turn = False
-player.win = False
+# hand = [card1, card2, card3, card4, card5]
+# cardNums = [5, 1, 4, 9]    
+# player = Player(playerNum=2, cards=hand)
+# player.turn = False
+# player.win = False
 
-currTurn = 0
-numOfPlayers = 4
-lastPlayedCard =lastCard
+# currTurn = 0
+# numOfPlayers = 4
+# lastPlayedCard =lastCard
 
-print_board(root, player, currTurn, lastPlayedCard, cardNums, numOfPlayers, clk)
-root.mainloop()
+# print_board(root, player, currTurn, lastPlayedCard, cardNums, numOfPlayers, clk)
+# root.mainloop()
 
-"""
+# """
 
 
 

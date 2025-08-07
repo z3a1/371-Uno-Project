@@ -92,7 +92,17 @@ def handle_client(conn, addr, client):
                 client_num = client['client_num']
 
                 with lock:
-                    
+                    if (token == "UNO"):
+                        playerNum = data.get("playerNum")
+                        uno = currGame.checkUno()
+                        if(uno != -1):
+                            if(playerNum != uno):
+                                broadcast_message({"playerNum": uno, "drawnCard": card})
+                            else:
+                             broadcast_message({"playerNum": playerNum, "uno":uno}) ##THEY HAVE ONE
+                        else:
+                            broadcast_message({"playerNum": playerNum, "drawnCard": card})                   
+
                     if currGame.turns != client_num:
                         print("client_num", client_num)
                         ## sents a message only to that socket if it is not their turn
@@ -100,16 +110,11 @@ def handle_client(conn, addr, client):
                         client_socket.sendall(pickle.dumps(message))
                         time.sleep(1)
                         continue
-                    
+
+                  
+
                     if currGame.turns == client_num:
-                        
-                        
-                        ## needs to be outside the lock 
-                        if (token == "UNO"):
-                            playerNum = data.get("playerNum")
-                            ## create an uno function in the client state
-                            
-                        
+
                         if (token=="PLACE"):
                             turn_taken=1
                             playerNum = data.get("playerNum")
