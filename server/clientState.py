@@ -50,6 +50,7 @@ class ClientState:
         self.cSocket.sendall(payload)
 
 
+    # Returns the given cards of the player obj
     def getPlayersCard(self,playerIdx):
         if playerIdx > self.numOfPlayers or playerIdx < 0:
             return None
@@ -57,7 +58,30 @@ class ClientState:
             return self.givenCards[playerIdx]
 
 
-        
+    # Helper function to parse if the res is a python dictionary, assumes it is and the check is done in
+    # Handle recv function
+    def parseServerRecv(self, res):
+        for i, (idx,val) in enumerate(res.items()):
+            if idx == "waitingRoom":
+                self.waitingRoom = val
+            elif idx == "startGame":
+                self.isGameRunning = val
+            elif idx == "playerNum":
+                # self.playerObj["playerNum"] = val
+                self.playerObj.playerNum = val
+                # self.numOfPlayers = val
+            elif idx == "numOfPlayers":  
+                self.numOfPlayers = val
+            elif idx == "playerCards":
+                self.playerObj.cards =val
+            elif idx == "otherCards":
+                self.otherPlayerCards = val  
+            elif idx == "lastPlayedCard":
+                print(val)
+                self.lastPlayedCard = val
+        if self.onGameRecv:
+            self.onGameRecv()
+                        
         
 
     def handleRecv(self):
@@ -68,58 +92,17 @@ class ClientState:
             # assert(self.isServerDisconnect())
             # if(not self.isGameRunning):
             res = pickle.loads(self.cSocket.recv(65535))
-            for i, (idx,val) in enumerate(res.items()):
-                if idx == "waitingRoom":
-                    self.waitingRoom = val
-                elif idx == "startGame":
-                    self.isGameRunning = val
-                elif idx == "playerNum":
-                    # self.playerObj["playerNum"] = val
-                    self.playerObj.playerNum = val
-                    # self.numOfPlayers = val
-                elif idx == "numOfPlayers":  
-                    self.numOfPlayers = val
-                elif idx == "playerCards":
-                    self.givenCards =val
-                elif idx == "playerCards":
-                    self.playerObj.cards = val  
-                elif idx == "lastPlayedCard":
-                    self.lastPlayedCard = Card(val.color, val.val)
-            if self.onGameRecv:
-                self.onGameRecv()
-                        
-
-            while self.isGameRunning:
-                res = pickle.loads(self.cSocket.recv(65535))
-                if(self.isGameRunning):
-                    print("self.isGameRunning")
-                print(res)
-                # gameStillRunning = res["isGameRunning"]
-                if self.isGameRunning:
-                    for i, (idx,val) in enumerate(res.items()):
-                        if idx == "playerNum":
-                            # self.playerObj["playerNum"] = val
-                            self.playerObj.playerNum = val
-                        elif idx == "lastPlayedCard":
-                            print(val)
-                            self.lastPlayedCard = Card(val.color, val.val)
-                        elif idx == "isGameDone":
-                            self.isGameRunning = val
-                        elif idx == "currPlayerTurn":
-                            self.currentPlayerTurn = val
-                        elif idx == "drawnCard":
-                            self.givenCards.append(val)
-                        elif idx == "uno":
-                            self.uno = val
-                        elif idx == "placedCard":
-                            for card in self.givenCards:
-                            
-                                if(card == val):
-                                    self.givenCards.remove(val)
-                        elif idx == "playerCards":
-                            self.playerObj["playerCards"] = val
-
-                    if self.onGameRecv:
-                        self.onGameRecv()
-                else:
-                    self.isGameRunning = False
+            if(isinstance(res,dict)):
+                self.parseServerRecv(res)
+                while self.isGameRunning:
+                    res = pickle.loads(self.cSocket.recv(65535))
+                    if(isinstance(res,dict)):
+                        if(self.isGameRunning):
+                            print("self.isGameRunning")
+                        # gameStillRunning = res["isGameRunning"]
+                        if self.isGameRunning:
+                            self.parseServerRecv(res)
+                        else:
+                            self.isGameRunning = False
+                    else:
+                        print(res)

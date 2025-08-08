@@ -45,9 +45,10 @@ def check_start_conditions(client_socket, start, turn, data):
             playerNum = data.get("playerNum")
             print(playerNum)
             # Player number has to be offset because of how arrays start!!!
-            initializeCards = currGame.players[playerNum-1].cards
+            initializeCards = currGame.players[playerNum - 1].cards
+
             print(initializeCards)
-            broadcast_message({"playerNum": playerNum, "startGame": True, "playerCards": initializeCards, "lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": True})
+            broadcast_message({"playerNum": playerNum, "startGame": True, "playerCards": initializeCards, "otherCards": currGame.cardLengths ,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": True})
             
             time.sleep(1)
             start = 1

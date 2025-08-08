@@ -54,8 +54,6 @@ class GUI:
             self.clientManager.isGameRunning = True
             self.clientManager.handleSend(action="START GAME",data={"playerNum": self.clientManager.playerObj.playerNum})
             print(self.clientManager.lastPlayedCard)
-
-            
             print_board(self.root, 
                         self.clientManager.playerObj,
                         self.clientManager.currentPlayerTurn, 
@@ -65,11 +63,11 @@ class GUI:
                         self.clickState)
             
         elif self.clickState.drawCard:
-            pass
+            self.clientManager.handleSend(action="DRAW",data={"playerNum": self.clientManager.playerObj.playerNum})
         else:
-            for state in self.clickState.hand:
+            for idx,state in enumerate(self.clickState.hand):
                 if state:
-                    # Handle Send
+                    print(state)
                     break
         self.clickState.reset()
     # def listen_to_server(self):
