@@ -125,9 +125,11 @@ def handle_client(conn, addr, client):
                     if currGame.turns == client_num:
 
                         if (token=="PLACE"):
+                            print("IN PLACE")
                             turn_taken=1
                             playerNum = data.get("playerNum")
                             cardIdx = data.get("cardIdx")
+                            print("cardIdx", cardIdx)
                         
                             card =currGame.placePlayerCard(playerNum, cardIdx) ## needs to be comepared with the last card 
                         

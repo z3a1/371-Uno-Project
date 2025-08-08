@@ -64,6 +64,12 @@ class GUI:
             
         elif self.clickState.drawCard:
             self.clientManager.handleSend(action="DRAW",data={"playerNum": self.clientManager.playerObj.playerNum})
+        elif self.clickState.hand:
+            idx = -1
+            for i in self.clickState.hand:
+                if self.clickState.hand[i] == 1:
+                    idx = i
+            self.clientManager.handleSend(action="PLACE",data={"playerNum": self.clientManager.playerObj.playerNum, "cardIdx": idx})
         else:
             for idx,state in enumerate(self.clickState.hand):
                 if state:
