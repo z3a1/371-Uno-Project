@@ -21,7 +21,7 @@ class GameState:
         cardVal = randint(self.lowestCard,self.highestCard)
         colorIdx = randint(self.lowestColorIdx,self.highestColorIdx)
         self.lastCardPlayed = Card(self.colors[colorIdx],"number",cardVal) 
-
+        
     # Used to generate a random deck depending on the seed, generating the value of the card and what color it can have
     def initializeDeck(self) -> list:
         # startingMaxCards = 8, lowestCard = 0, highestCard = 9 ,lowestColorIdx = 1, highestColorIdx = 4
