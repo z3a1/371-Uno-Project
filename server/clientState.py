@@ -19,6 +19,7 @@ class ClientState:
         self.lastPlayedCard = None
         # Map Set Of Player Num and Cards -> self.cardLengths
         self.otherPlayerCards = []
+        self.currentPlayerTurn = 0
         self.numOfPlayers = 0
         self.cSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.cSocket.connect((HOST,PORT))
@@ -30,7 +31,6 @@ class ClientState:
         self.uno = -1
 
         # currTurn: Whos current turn is it, turns: How many turns the game has taken
-        self.currentPlayerTurn = 1
         self.turns = 0
         self.menu = True
         self.gameStart = False
@@ -80,12 +80,10 @@ class ClientState:
             elif idx == "otherCards":
                 self.otherPlayerCards = val  
             elif idx == "lastPlayedCard":
-                self.lastPlayedCard = Card(val=val.val,cType="number",color=val.color)
+                self.lastPlayedCard = val
             elif idx == "drawnCard":
                 print("Drawn Card: {val.color} {val.val}")
                 self.playerObj.addCard(val)
-            elif idx == "turns":
-                self.currentPlayerTurn = val
         if self.onGameRecv:
             self.onGameRecv()
                         

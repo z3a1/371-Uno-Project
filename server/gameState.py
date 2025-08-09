@@ -29,7 +29,6 @@ class GameState:
         for i in range(self.startingMaxCards):
             cardVal = randint(self.lowestCard,self.highestCard)
             colorIdx = randint(self.lowestColorIdx,self.highestColorIdx)
-            print("Adding: CardVal: " + str(cardVal) + " Card Color: " + str(colorIdx))
             deck.append(Card(self.colors[colorIdx],"number",cardVal))
         
         return deck

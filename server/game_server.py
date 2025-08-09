@@ -60,7 +60,7 @@ def check_start_conditions(client_socket, start, turn, data):
             # Player number has to be offset because of how arrays start!!!
 
             # print(initializeCards)
-            for idx,client in enumerate(reversed(clients)):
+            for idx,client in enumerate(clients):
                 initializeCards = currGame.players[idx].cards
                 send_individual_message(client_num=idx,message={"playerNum": idx, "startGame": True, "playerCards": initializeCards, "otherCards": currGame.cardLengths ,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": True, "turns": currGame.turns})
             
@@ -94,13 +94,13 @@ def handle_client(conn, addr, client):
             if start == 0 and currGame.gameStart == False:
                 ## join game - puts the player in the waiting room and adds them to client list 
                 if (token == 'JOIN GAME'):
-                    client_num += 1
                     client["client_num"] = client_num
                     currGame.numOfPlayers += 1
                     currGame.addNewPlayer(client_num)
                     clients.append(client)
                     
-                    broadcast_message({"playerNum": client_num, "waitingRoom": True, "numOfPlayers":currGame.numOfPlayers,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": False})
+                    send_individual_message(client_num=client_num, message= {"playerNum": client_num, "waitingRoom": True, "numOfPlayers":currGame.numOfPlayers,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": False})
+                    client_num += 1
                 ## start game - prompts the game to start 
                 if (token == 'START GAME'):
                     start = check_start_conditions(client_socket, start, currGame.turns, data)
@@ -143,8 +143,7 @@ def handle_client(conn, addr, client):
 
                   
 
-                    if currGame.turns == currentClient:
-                        print("here")
+                    if (currGame.turns - 1) == client_num:
 
                         if (token=="PLACE"):
                             print("IN PLACE")
@@ -153,12 +152,12 @@ def handle_client(conn, addr, client):
                             cardIdx = data.get("cardIdx")
                             print("cardIdx " + str(cardIdx) + " player num: " + str(playerNum) + " client num " + str(client_num))
                         
-                            card = currGame.placePlayerCard(playerNum=client_num - 1,cardIdx=cardIdx - 1) ## needs to be comepared with the last card 
+                            card = currGame.placePlayerCard(playerNum=client_num,cardIdx=cardIdx - 1) ## needs to be comepared with the last card 
                             print(card)
                             if card:
                                 print("last Card num: " + str(card.val) + "last Card color: " + card.color)
                                 currGame.lastCardPlayed = card
-                                send_individual_message(client_num - 1, {"playerNum":client_num, "playerCards": currGame.players[client_num - 1].cards, "lastPlayedCard": card})
+                                send_individual_message(playerNum, {"playerNum":playerNum, "playerCards": currGame.players[client_num].cards})
                                 print("Last Card: " + currGame.lastCardPlayed.color + " " + str(currGame.lastCardPlayed.val))
                                 winner = currGame.checkWinner()
                                 if winner != -1:
@@ -178,8 +177,6 @@ def handle_client(conn, addr, client):
                                 currGame.lastCardPlayed = card
                                 # broadcast_message({"playerNum": playerNum, "drawnCard": card})
                                 send_individual_message(playerNum - 1,{"playerNum": playerNum, "drawnCard": card})
-
-                        
                         
                             ##If we use deckLength
                             # deckLength = len(currGame.players[playerNum].cards)

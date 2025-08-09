@@ -18,6 +18,7 @@ class Player:
     def __init__(self, cards, playerNum = 0):
         self.playerNum = playerNum
         self.cards = cards
+        self.turn = False
         self.win = False
 
     def addCard(self,card):

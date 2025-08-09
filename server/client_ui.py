@@ -52,7 +52,7 @@ class GUI:
             # self.clientManager.handleSend(action="START GAME", data={"playerNum": self.clientManager.playerObj["playerNum"]})
             # print(self.clientManager.playerObj["playerNum"])
             self.clientManager.isGameRunning = True
-            self.clientManager.handleSend(action="START GAME",data={"playerNum": self.clientManager.playerObj.playerNum - 1})
+            self.clientManager.handleSend(action="START GAME",data={"playerNum": self.clientManager.playerObj.playerNum})
             print(self.clientManager.lastPlayedCard)
             print_board(self.root, 
                         self.clientManager.playerObj,
@@ -63,14 +63,15 @@ class GUI:
                         self.clickState)
             
         elif self.clickState.drawCard:
-            self.clientManager.handleSend(action="DRAW",data={"playerNum": self.clientManager.playerObj.playerNum - 1})
+            self.clientManager.handleSend(action="DRAW",data={"playerNum": self.clientManager.playerObj.playerNum})
         elif 1 in self.clickState.hand:
+            print(self.clientManager.currentPlayerTurn == self.clientManager.playerObj.playerNum)
             idx = -1
             for i,val in enumerate(self.clickState.hand):
                 if self.clickState.hand[i] == 1:
                     idx = i
-            self.clientManager.playerObj.playCard(idx)
-            self.clientManager.handleSend(action="PLACE",data={"playerNum": self.clientManager.playerObj.playerNum - 1, "cardIdx": idx})
+            card = self.clientManager.playerObj.playCard(idx - 1)
+            self.clientManager.handleSend(action="PLACE",data={"playerNum": self.clientManager.playerObj.playerNum, "cardIdx": idx})
         self.clickState.reset()
 
     def updateUI(self):
