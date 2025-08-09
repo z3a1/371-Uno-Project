@@ -30,7 +30,7 @@ def broadcast_message(message):
             clients.remove(client)
 
 def send_individual_message(client_num,message):
-    currClient = clients[client_num - 1]
+    currClient = clients[client_num]
     cSocket = currClient["client_socket"]
     try:
         cSocket.sendall(pickle.dumps(message))
@@ -94,14 +94,13 @@ def handle_client(conn, addr, client):
             if start == 0 and currGame.gameStart == False:
                 ## join game - puts the player in the waiting room and adds them to client list 
                 if (token == 'JOIN GAME'):
-                    client_num += 1
                     client["client_num"] = client_num
                     currGame.numOfPlayers += 1
                     currGame.addNewPlayer(client_num)
                     clients.append(client)
                     
-                    broadcast_message({"playerNum": currGame.players[client_num - 1].playerNum , "waitingRoom": True, "numOfPlayers":currGame.numOfPlayers,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": False})
-                
+                    send_individual_message(client_num=client_num, message= {"playerNum": client_num, "waitingRoom": True, "numOfPlayers":currGame.numOfPlayers,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": False})
+                    client_num += 1
                 ## start game - prompts the game to start 
                 if (token == 'START GAME'):
                     start = check_start_conditions(client_socket, start, currGame.turns, data)
@@ -113,8 +112,7 @@ def handle_client(conn, addr, client):
             
             ## IN GAME 
             if start == 1 and currGame.gameStart == True:
-                client_num = client['client_num'] + 1
-                print(client_num)
+                client_num = client['client_num']
 
                 with lock:
                     broadcast_message({"currentPlayerTurn": client_num})
@@ -139,21 +137,21 @@ def handle_client(conn, addr, client):
 
                   
 
-                    if currGame.turns == client_num:
+                    if (currGame.turns - 1) == client_num:
 
                         if (token=="PLACE"):
                             print("IN PLACE")
                             turn_taken=1
                             playerNum = data.get("playerNum")
                             cardIdx = data.get("cardIdx")
-                            print("cardIdx", cardIdx)
+                            print("cardIdx " + str(cardIdx) + " player num: " + str(playerNum) + " client num " + str(client_num))
                         
-                            card = currGame.placePlayerCard(playerNum, cardIdx - 1) ## needs to be comepared with the last card 
+                            card = currGame.placePlayerCard(playerNum=client_num,cardIdx=cardIdx - 1) ## needs to be comepared with the last card 
+                            print(card)
                             if card:
-                                broadcast_message({"playerNum": playerNum, "lastPlayedCard": card})
-                                print("Card num: " + str(card.val) + "Card color: " + card.color)
+                                print("last Card num: " + str(card.val) + "last Card color: " + card.color)
                                 currGame.lastCardPlayed = card
-                                send_individual_message(playerNum, {"playerNum":playerNum, "playerCards": currGame.players[playerNum].cards})
+                                send_individual_message(playerNum, {"playerNum":playerNum, "playerCards": currGame.players[client_num].cards})
                                 print("Last Card: " + currGame.lastCardPlayed.color + " " + str(currGame.lastCardPlayed.val))
                                 winner = currGame.checkWinner()
                                 if winner != -1:
@@ -182,7 +180,7 @@ def handle_client(conn, addr, client):
                     with lock:
                     
                         if currGame.turns == len(clients):
-                            currGame.turns = 1
+                            currGame.turns = 0
                         else:
                             currGame.turns = currGame.turns + 1
                             print("currGame.turns", currGame.turns)

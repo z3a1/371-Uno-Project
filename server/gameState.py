@@ -53,7 +53,7 @@ class GameState:
     def placePlayerCard(self,playerNum: int, cardIdx: int) -> Card:
         if(playerNum > len(self.players) and playerNum < 0) and (cardIdx > len(self.players[playerNum].cards) and cardIdx < 0):
             return None
-        self.cardLengths[playerNum] -= 1
+        self.cardLengths[playerNum - 1] -= 1
         return self.players[playerNum].playCard(cardIdx)
     
     #Checks which player obj is the winner, returns -1 if no one has won

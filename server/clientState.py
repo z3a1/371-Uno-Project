@@ -62,7 +62,6 @@ class ClientState:
     # Handle recv function
     def parseServerRecv(self, res):
         print("parseServerRcv")
-        print(res)
         for i, (idx,val) in enumerate(res.items()):
             if idx == "waitingRoom":
                 self.waitingRoom = val
