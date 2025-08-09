@@ -27,7 +27,7 @@ class Player:
 
     
     def playCard(self,index):
-        if index > len(self.cards) or index < 0:
+        if index > len(self.cards) and index < 0:
             return -1
         else:
             return self.cards.pop(index)

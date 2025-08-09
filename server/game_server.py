@@ -95,6 +95,7 @@ def handle_client(conn, addr, client):
                 ## join game - puts the player in the waiting room and adds them to client list 
                 if (token == 'JOIN GAME'):
                     client_num += 1
+                    client["client_num"] = client_num
                     currGame.numOfPlayers += 1
                     currGame.addNewPlayer(client_num)
                     clients.append(client)
@@ -116,6 +117,7 @@ def handle_client(conn, addr, client):
                 print(client_num)
 
                 with lock:
+                    broadcast_message({"currentPlayerTurn": client_num})
                     if (token == "UNO"):
                         playerNum = data.get("playerNum")
                         uno = currGame.checkUno()
@@ -146,10 +148,13 @@ def handle_client(conn, addr, client):
                             cardIdx = data.get("cardIdx")
                             print("cardIdx", cardIdx)
                         
-                            card = currGame.placePlayerCard(playerNum, cardIdx) ## needs to be comepared with the last card 
+                            card = currGame.placePlayerCard(playerNum, cardIdx - 1) ## needs to be comepared with the last card 
                             if card:
                                 broadcast_message({"playerNum": playerNum, "lastPlayedCard": card})
-                                send_individual_message(playerNum - 1, {"playerNum":playerNum, "playerCards": currGame.players[playerNum - 1].cards})
+                                print("Card num: " + str(card.val) + "Card color: " + card.color)
+                                currGame.lastCardPlayed = card
+                                send_individual_message(playerNum, {"playerNum":playerNum, "playerCards": currGame.players[playerNum].cards})
+                                print("Last Card: " + currGame.lastCardPlayed.color + " " + str(currGame.lastCardPlayed.val))
                                 winner = currGame.checkWinner()
                                 if winner != -1:
                                     currGame.gameStart = False
@@ -160,8 +165,8 @@ def handle_client(conn, addr, client):
                             turn_taken=1
                             playerNum = data.get("playerNum")
                             card = currGame.drawCardForPlayer(playerNum)
+                            print("Card: {card}")
                             if card:
-                                print("Card Num" + card.val)
                                 currGame.lastCardPlayed = card
                                 # broadcast_message({"playerNum": playerNum, "drawnCard": card})
                                 send_individual_message(playerNum - 1,{"playerNum": playerNum, "drawnCard": card})

@@ -72,6 +72,8 @@ class ClientState:
                 # self.playerObj["playerNum"] = val
                 self.playerObj.playerNum = val
                 # self.numOfPlayers = val
+            elif idx == "currentPlayerTurn":
+                self.currentPlayerTurn = val
             elif idx == "numOfPlayers":  
                 self.numOfPlayers = val
             elif idx == "playerCards":

@@ -229,8 +229,8 @@ def _print_hands(root, numPlayers, player, card_nums, currTurn, col, clk):
         )
 
         pseudoBtn.bind(
-            "<Button-3>",
-            lambda: clk.clicked(('hand', idx))
+            "<Button-1>",
+            lambda e: clk.clicked(('hand', idx))
         )
 
         pseudoBtn.bind("<Enter>", lambda e, btn=pseudoBtn: btn.config(bg="white", fg="black"))
