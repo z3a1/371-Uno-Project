@@ -77,7 +77,7 @@ def print_board(root, player, currTurn, lastCard, card_nums, numPlayers, clk):
     deck = tk.Label(frameCentre, text="Deck", font=("Helvetica", 14), bg="grey50", fg='white', justify='left', width=5, height=5)
     deck.grid(row = 0, column = 1, sticky = "", pady = 2, padx=8)
     #print last card played
-    prevCard = tk.Label(frameCentre, bg=lastCard.color, text=lastCard.type, font=("Helvetica", 34), fg='grey69', width=2, height=2)
+    prevCard = tk.Label(frameCentre, bg=lastCard.color, text=lastCard.val, font=("Helvetica", 34), fg='grey69', width=2, height=2)
     prevCard.grid(row = 0, column = 0, sticky = "", pady = 10, padx=8)
     #print draw card button:
     drawCardBtn = tk.Button(frameCentre, text="Draw\n card", font=("Helvetica", 20), command=lambda: clk.clicked('drawCard'))
@@ -216,7 +216,7 @@ def _print_hands(root, numPlayers, player, card_nums, currTurn, col, clk):
     for idx, currCard in enumerate(player.cards):
         pseudoBtn = tk.Label(
             frameSelf,
-            text=str(currCard.type),
+            text=str(currCard.val),
             font=hand_font,
             bg=currCard.color.lower(), 
             fg="gray48",
@@ -238,25 +238,21 @@ def _print_hands(root, numPlayers, player, card_nums, currTurn, col, clk):
         pseudoBtn.grid(row = 0, column = idx, padx=4)
 
     ##print number of cards across screen of opponents
-    nextPlayer = (player.playerNum + 1)% numPlayers
-    print(player.playerNum)
-    print(numPlayers)
-    print(nextPlayer)
-    print(len(card_nums))
+    nextPlayer = ((player.playerNum) % (numPlayers)) + 1
     if numPlayers == 2:
         cols = _if_turn(currTurn, nextPlayer)
         otherCards1 = tk.Frame(root, bg=col)
         otherCards1.place(relx=0.5, rely=0.1, anchor="n")
-        label1 = tk.Label(otherCards1, font=opponent_font, text=str(card_nums[nextPlayer]), bg=cols[1], fg=cols[0], justify='left')
+        label1 = tk.Label(otherCards1, font=opponent_font, text=str(card_nums[nextPlayer if nextPlayer < len(card_nums) else (nextPlayer - 1)]), bg=cols[1], fg=cols[0], justify='left')
         label1.grid(row = 0, column = 0, sticky = "", pady = 2)
     else:
         cols1 = _if_turn(currTurn, nextPlayer)
         otherCards1 = tk.Frame(root, bg=col)
         otherCards1.place(relx=0.1, rely=0.5, anchor="w")
-        label1 = tk.Label(otherCards1,font=opponent_font, text=str(card_nums[nextPlayer]), bg=cols1[1], fg=cols1[0], justify='left')
+        label1 = tk.Label(otherCards1,font=opponent_font, text=str(card_nums[nextPlayer - 1]), bg=cols1[1], fg=cols1[0], justify='left')
         label1.grid(row = 0, column = 0, sticky = "", pady = 2)
 
-        nextPlayerx2 = (player.playerNum + 2)% numPlayers
+        nextPlayerx2 = ((player.playerNum + 2) % (numPlayers)) + 1
         cols2 = _if_turn(currTurn, nextPlayerx2)
         otherCards2 = tk.Frame(root, bg=col)
         otherCards2.place(relx=0.5, rely=0.1, anchor="n")
@@ -264,7 +260,7 @@ def _print_hands(root, numPlayers, player, card_nums, currTurn, col, clk):
         label1.grid(row = 0, column = 0, sticky = "", pady = 2)
 
         if numPlayers == 4:
-            nextPlayerx3 = (player.playerNum + 3)% numPlayers
+            nextPlayerx3 = ((player.playerNum + 3) % (numPlayers)) + 1
             cols3 = _if_turn(currTurn, nextPlayerx3 )
             otherCards3 = tk.Frame(root, bg=col)
             otherCards3.place(relx=0.9, rely=0.5, anchor="e")

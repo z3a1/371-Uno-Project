@@ -64,56 +64,14 @@ class GUI:
             
         elif self.clickState.drawCard:
             self.clientManager.handleSend(action="DRAW",data={"playerNum": self.clientManager.playerObj.playerNum})
-        else:
-            for idx,state in enumerate(self.clickState.hand):
-                if state:
-                    print(state)
-                    break
+        elif self.clickState.hand:
+            idx = -1
+            for i in self.clickState.hand:
+                if self.clickState.hand[i] == 1:
+                    idx = i
+            self.clientManager.playerObj.playCard(idx)
+            self.clientManager.handleSend(action="PLACE",data={"playerNum": self.clientManager.playerObj.playerNum, "cardIdx": idx})
         self.clickState.reset()
-    # def listen_to_server(self):
-    #     while True:
-    #         try:
-    #             data = self.clientManager.cSocket.recv(65535)
-    #             if not data:
-    #                 print("Server closed connection")
-    #                 break
-    #             message = pickle.loads(data)
-    #             self.msg_queue.put(message)
-    #         except Exception as e:
-    #             print("Error receiving from server:", e)
-    #             break    
-
-    # def poll_server(self):
-    #     while not self.msg_queue.empty():
-    #         msg = self.msg_queue.get()
-    #         self.handle_server_message(msg)
-    #     self.root.after(100, self.poll_server) 
-
-    # def handle_server_message(self, message):
-    #     if message.get("waitingRoom"):
-    #         player_num = message.get("playerNum")
-    #         self.clientManager.numOfPlayers = player_num
-    #         waiting_room(self.root, player_num, self.clickState)
-
-    #     elif message.get("startGame"):
-    #         self.clientManager.isGameRunning = True
-    #         print(self.clientManager.isGameRunning)
-    #         self.clientManager.playerObj["playerNum"] = message["playerNum"]
-    #         self.clientManager.lastPlayedCard = message["lastPlayedCard"]
-    #         self.clientManager.givenCards = message["playerCards"]
-    #         self.clientManager.currentPlayerTurn = message["currentPlayerTurn"]
-    #         print("currently printingf board for player", self.clientManager.playerNum)
-    #         print_board(self.root, 
-    #             self.clientManager.playerObj,
-    #             self.clientManager.currentPlayerTurn, 
-    #             self.clientManager.lastPlayedCard, 
-    #             self.clientManager.otherPlayerCards, 
-    #             self.clientManager.numOfPlayers, 
-    #             self.clickState)
-
-    #     elif message.get("winner"):
-    #         winner = message["winner"]
-    #         tk.messagebox.showinfo("Game Over", f"Player {winner} wins!")
 
     def updateUI(self):
         if not self.clientManager.isGameRunning:
