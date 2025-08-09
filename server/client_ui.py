@@ -15,7 +15,7 @@ class GUI:
         self.root = tk.Tk()
         self.root.title("CMPT 371 Project UNO")
         self.root.geometry("600x600")
-        self.root.resizable(0,0)
+        # self.root.resizable(0,0)
         self.root.state('zoomed')
 
         self.clientManager = ClientState()

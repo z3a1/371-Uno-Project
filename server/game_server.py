@@ -153,7 +153,8 @@ def handle_client(conn, addr, client):
                             playerNum = data.get("playerNum")
                             cardIdx = data.get("cardIdx")
                             print("cardIdx", cardIdx)
-                        
+                            
+
                             card = currGame.placePlayerCard(playerNum, cardIdx - 1) ## needs to be comepared with the last card 
                             if card:
                                 broadcast_message({"playerNum": playerNum, "lastPlayedCard": card})
@@ -178,7 +179,7 @@ def handle_client(conn, addr, client):
                             if card:
                                 currGame.lastCardPlayed = card
                                 # broadcast_message({"playerNum": playerNum, "drawnCard": card})
-                                send_individual_message(playerNum - 1,{"playerNum": playerNum, "drawnCard": card})
+                                send_individual_message(playerNum,{"playerNum": playerNum, "drawnCard": card})
                         
                             ##If we use deckLength
                             # deckLength = len(currGame.players[playerNum].cards)
@@ -195,11 +196,15 @@ def handle_client(conn, addr, client):
                     
                         if currGame.turns == len(clients):
                             currGame.turns = 1
+                            broadcast_message({"currentPlayerTurn": currGame.turns})
+                            # send_individual_message(playerNum,{"currentPlayerTurn": currGame.turns})
                             print('if equal')
                             print(currGame.turns)
                         else:
                             currGame.turns = currGame.turns + 1
                             print("currGame.turns", currGame.turns)
+                            broadcast_message({"currentPlayerTurn": currGame.turns})
+                            # send_individual_message(playerNum,{"currentPlayerTurn": currGame.turns})
                             turn_taken = 0
                         # broadcast_message(f"It is now Player {currGame.turns}'s turn\n")
 
