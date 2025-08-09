@@ -82,7 +82,10 @@ class ClientState:
             elif idx == "lastPlayedCard":
                 self.lastPlayedCard = Card(val=val.val,cType="number",color=val.color)
             elif idx == "drawnCard":
-                self.playerObj.addCard(Card(val=val.val,cType="number",color=val.color))
+                print("Drawn Card: {val.color} {val.val}")
+                self.playerObj.addCard(val)
+            elif idx == "turns":
+                self.currentPlayerTurn = val
         if self.onGameRecv:
             self.onGameRecv()
                         
