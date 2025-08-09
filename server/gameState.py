@@ -70,7 +70,7 @@ class GameState:
         return -1
 
     #Upon init of connection, game state adds a new player IF there are less than 4 players
-    def addNewPlayer(self) -> None:
+    def addNewPlayer(self, client_num) -> None:
         if(self.numOfPlayers < 4):
-            self.players.append(Player(self.initializeDeck()))
+            self.players.append(Player(self.initializeDeck(),playerNum=client_num))
             self.cardLengths.append(7)

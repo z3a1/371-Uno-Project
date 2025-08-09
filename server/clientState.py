@@ -16,7 +16,7 @@ class ClientState:
         self.playerObj = Player(playerNum=playerNum, cards=[])
         # self.playerObj["playerNum"] = playerNum
         # Card Object of the last card played 
-        self.lastPlayedCard = {}
+        self.lastPlayedCard = None
         # Map Set Of Player Num and Cards -> self.cardLengths
         self.otherPlayerCards = []
         self.currentPlayerTurn = 0
@@ -61,6 +61,8 @@ class ClientState:
     # Helper function to parse if the res is a python dictionary, assumes it is and the check is done in
     # Handle recv function
     def parseServerRecv(self, res):
+        print("parseServerRcv")
+        print(res)
         for i, (idx,val) in enumerate(res.items()):
             if idx == "waitingRoom":
                 self.waitingRoom = val
@@ -77,8 +79,10 @@ class ClientState:
             elif idx == "otherCards":
                 self.otherPlayerCards = val  
             elif idx == "lastPlayedCard":
-                print(val)
                 self.lastPlayedCard = val
+            elif idx == "drawnCard":
+                print("Drawn Card: {val.color} {val.val}")
+                self.playerObj.addCard(val)
         if self.onGameRecv:
             self.onGameRecv()
                         
@@ -98,7 +102,7 @@ class ClientState:
                     res = pickle.loads(self.cSocket.recv(65535))
                     if(isinstance(res,dict)):
                         if(self.isGameRunning):
-                            print("self.isGameRunning")
+                            print("self.isGameRunning: {self.isGameRunning}")
                         # gameStillRunning = res["isGameRunning"]
                         if self.isGameRunning:
                             self.parseServerRecv(res)

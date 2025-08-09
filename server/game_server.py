@@ -28,6 +28,18 @@ def broadcast_message(message):
             print(f"Error sending message to a client")
             client_socket.close() 
             clients.remove(client)
+
+def send_individual_message(client_num,message):
+    currClient = clients[client_num - 1]
+    cSocket = currClient["client_socket"]
+    try:
+        cSocket.sendall(pickle.dumps(message))
+    except socket.error as e:
+        print("ERROR: {e}")
+        cSocket.close()
+        clients.remove(currClient)
+        
+
             
     
 
@@ -44,11 +56,13 @@ def check_start_conditions(client_socket, start, turn, data):
 
             playerNum = data.get("playerNum")
             print(playerNum)
+            currGame.turns = playerNum
             # Player number has to be offset because of how arrays start!!!
-            initializeCards = currGame.players[playerNum - 1].cards
 
-            print(initializeCards)
-            broadcast_message({"playerNum": playerNum, "startGame": True, "playerCards": initializeCards, "otherCards": currGame.cardLengths ,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": True})
+            # print(initializeCards)
+            for idx,client in enumerate(clients):
+                initializeCards = currGame.players[idx].cards
+                send_individual_message(client_num=idx,message={"playerNum": idx, "startGame": True, "playerCards": initializeCards, "otherCards": currGame.cardLengths ,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": True})
             
             time.sleep(1)
             start = 1
@@ -82,10 +96,10 @@ def handle_client(conn, addr, client):
                 if (token == 'JOIN GAME'):
                     client_num += 1
                     currGame.numOfPlayers += 1
-                    currGame.addNewPlayer()
+                    currGame.addNewPlayer(client_num)
                     clients.append(client)
                     
-                    broadcast_message({"playerNum": client_num, "waitingRoom": True, "numOfPlayers":currGame.numOfPlayers, "isGameRunning": False})
+                    broadcast_message({"playerNum": currGame.players[client_num - 1].playerNum , "waitingRoom": True, "numOfPlayers":currGame.numOfPlayers,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": False})
                 
                 ## start game - prompts the game to start 
                 if (token == 'START GAME'):
@@ -98,7 +112,8 @@ def handle_client(conn, addr, client):
             
             ## IN GAME 
             if start == 1 and currGame.gameStart == True:
-                client_num = client['client_num']
+                client_num = client['client_num'] + 1
+                print(client_num)
 
                 with lock:
                     if (token == "UNO"):
@@ -113,10 +128,10 @@ def handle_client(conn, addr, client):
                             broadcast_message({"playerNum": playerNum, "drawnCard": card})                   
 
                     if currGame.turns != client_num:
-                        print("client_num", client_num)
+                        print("client_num" + str(client_num) + " currGame.turns: " + str(currGame.turns))
                         ## sents a message only to that socket if it is not their turn
                         message = "It's not your turn!\n"
-                        client_socket.sendall(pickle.dumps(message))
+                        client_socket.sendall(pickle.dumps({"message": message}))
                         time.sleep(1)
                         continue
 
@@ -131,27 +146,30 @@ def handle_client(conn, addr, client):
                             cardIdx = data.get("cardIdx")
                             print("cardIdx", cardIdx)
                         
-                            card =currGame.placePlayerCard(playerNum, cardIdx) ## needs to be comepared with the last card 
-                        
-                            broadcast_message({"playerNum": playerNum, "placedCard": card, "isGameRunning": True})
-                            
-                            winner = currGame.checkWinner()
-                            if winner != -1:
-                                currGame.gameStart = False
-                                start = 0
-                                broadcast_message({"winner": winner,  "isGameRunning": False})
-                                
+                            card = currGame.placePlayerCard(playerNum, cardIdx) ## needs to be comepared with the last card 
+                            if card:
+                                broadcast_message({"playerNum": playerNum, "lastPlayedCard": card})
+                                send_individual_message(playerNum - 1, {"playerNum":playerNum, "playerCards": currGame.players[playerNum - 1].cards})
+                                winner = currGame.checkWinner()
+                                if winner != -1:
+                                    currGame.gameStart = False
+                                    start = 0
+                                    broadcast_message({"winner": winner,  "isGameRunning": False})
 
                         if(token == "DRAW"):
                             turn_taken=1
                             playerNum = data.get("playerNum")
                             card = currGame.drawCardForPlayer(playerNum)
+                            if card:
+                                print("Card Num" + card.val)
+                                currGame.lastCardPlayed = card
+                                # broadcast_message({"playerNum": playerNum, "drawnCard": card})
+                                send_individual_message(playerNum - 1,{"playerNum": playerNum, "drawnCard": card})
                         
                             ##If we use deckLength
                             # deckLength = len(currGame.players[playerNum].cards)
                             # broadcast_message({"playerNum": playerNum, "deckLength": deckLength, "isGameRunning": True})
 
-                            broadcast_message({"playerNum": playerNum, "drawnCard": card, "isGameRunning": True})
                             
                                 
                 if turn_taken == 1:
@@ -178,12 +196,14 @@ def handle_client(conn, addr, client):
                         print(client)
                         try:
                             print('closing')
+                            broadcast_message({"isGameRunning": False})
                             client['client_socket'].close() 
                             print('close')
                         except Exception as ex:
                             print(f"Error closing socket for a client")
                             
                             # clients.remove(client)   
+                    os._exit(1)
                 print('out of lock')
             if (start == 0 and currGame.gameStart == False):
                 pass
@@ -194,7 +214,7 @@ def handle_client(conn, addr, client):
             # When client leaves, connection is still valid, catch the EOFError to force exit the server
             print(e)
             os._exit(1)
-        except socket.error as e:
+        except (socket.error, WindowsError) as e:
             print(e)
             os._exit(1)
 
