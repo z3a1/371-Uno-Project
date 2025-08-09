@@ -115,6 +115,11 @@ def handle_client(conn, addr, client):
             if start == 1 and currGame.gameStart == True:
                 # client_num = client['client_num'] + 1
                 # print(client_num)
+                currentClient = client['client_num']
+                
+                print("sup")
+                print(currGame.turns)
+                print(currentClient)
 
                 with lock:
                     # broadcast_message({"currentPlayerTurn": client_num})
@@ -129,7 +134,7 @@ def handle_client(conn, addr, client):
                         else:
                             broadcast_message({"playerNum": playerNum, "drawnCard": card})                   
 
-                    if currGame.turns != client_num:
+                    if currGame.turns != currentClient:
                         # print("client_num" + str(client_num) + " currGame.turns: " + str(currGame.turns))
                         ## sents a message only to that socket if it is not their turn
                         message = "It's not your turn!\n"
@@ -139,7 +144,8 @@ def handle_client(conn, addr, client):
 
                   
 
-                    if currGame.turns == client_num:
+                    if currGame.turns == currentClient:
+                        print("here")
 
                         if (token=="PLACE"):
                             print("IN PLACE")

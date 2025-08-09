@@ -25,7 +25,7 @@ def print_menu(root, clk):
     _screen_set_up(root, "Main Menu", "Verdana", "light yellow")
     menu_font = tkFont.Font(family="Verdana", size=32, weight=tk.NORMAL)
 
-    msg = "__uno__ "
+    msg = "__zero__ "
     title = tk.Label(root, text=msg, font=("Helvetica", 100, "bold", "italic"), bg='tan1', fg='red3')
     title.place(relx=0.5, rely=0.2, anchor=tk.CENTER)
 
