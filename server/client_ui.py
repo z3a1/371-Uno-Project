@@ -64,13 +64,13 @@ class GUI:
             
         elif self.clickState.drawCard:
             self.clientManager.handleSend(action="DRAW",data={"playerNum": self.clientManager.playerObj.playerNum})
-        elif self.clickState.hand:
+        elif 1 in self.clickState.hand:
+            print(self.clientManager.currentPlayerTurn == self.clientManager.playerObj.playerNum)
             idx = -1
-            for i in self.clickState.hand:
+            for i,val in enumerate(self.clickState.hand):
                 if self.clickState.hand[i] == 1:
                     idx = i
-            print(idx, len(self.clientManager.playerObj.cards))
-            print(self.clientManager.playerObj.playCard(idx))
+            card = self.clientManager.playerObj.playCard(idx)
             self.clientManager.handleSend(action="PLACE",data={"playerNum": self.clientManager.playerObj.playerNum, "cardIdx": idx})
         self.clickState.reset()
 

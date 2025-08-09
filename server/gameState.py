@@ -51,10 +51,10 @@ class GameState:
 
     #Same logic as adding card but we are returning the recently popped card for that player
     def placePlayerCard(self,playerNum: int, cardIdx: int) -> Card:
-        if(playerNum > len(self.players) or playerNum < 0) or (cardIdx > len(self.players[playerNum].cards) or cardIdx < 0):
+        if(playerNum > len(self.players) and playerNum < 0) and (cardIdx > len(self.players[playerNum].cards) and cardIdx < 0):
             return None
         self.cardLengths[playerNum] -= 1
-        return self.players[playerNum].cards.pop(cardIdx)
+        return self.players[playerNum].playCard(cardIdx)
     
     #Checks which player obj is the winner, returns -1 if no one has won
     def checkWinner(self) -> int:
