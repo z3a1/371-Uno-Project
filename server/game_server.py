@@ -116,6 +116,7 @@ def handle_client(conn, addr, client):
                 print(client_num)
 
                 with lock:
+                    broadcast_message({"currentPlayerTurn": client_num})
                     if (token == "UNO"):
                         playerNum = data.get("playerNum")
                         uno = currGame.checkUno()
@@ -147,9 +148,12 @@ def handle_client(conn, addr, client):
                             print("cardIdx", cardIdx)
                         
                             card = currGame.placePlayerCard(playerNum, cardIdx) ## needs to be comepared with the last card 
+                            print(card)
                             if card:
                                 broadcast_message({"playerNum": playerNum, "lastPlayedCard": card})
-                                send_individual_message(playerNum - 1, {"playerNum":playerNum, "playerCards": currGame.players[playerNum - 1].cards})
+                                print("Card: {card.val}")
+                                currGame.lastCardPlayed = card
+                                send_individual_message(playerNum, {"playerNum":playerNum, "playerCards": currGame.players[playerNum - 1].cards})
                                 winner = currGame.checkWinner()
                                 if winner != -1:
                                     currGame.gameStart = False
@@ -160,6 +164,7 @@ def handle_client(conn, addr, client):
                             turn_taken=1
                             playerNum = data.get("playerNum")
                             card = currGame.drawCardForPlayer(playerNum)
+                            print("Card: {card}")
                             if card:
                                 print("Card Num" + card.val)
                                 currGame.lastCardPlayed = card

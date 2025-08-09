@@ -69,7 +69,8 @@ class GUI:
             for i in self.clickState.hand:
                 if self.clickState.hand[i] == 1:
                     idx = i
-            self.clientManager.playerObj.playCard(idx)
+            print(idx, len(self.clientManager.playerObj.cards))
+            print(self.clientManager.playerObj.playCard(idx))
             self.clientManager.handleSend(action="PLACE",data={"playerNum": self.clientManager.playerObj.playerNum, "cardIdx": idx})
         self.clickState.reset()
 
