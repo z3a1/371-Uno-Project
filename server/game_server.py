@@ -55,14 +55,14 @@ def check_start_conditions(client_socket, start, turn, data):
             currGame.gameStart = True
 
             playerNum = data.get("playerNum")
-            print(playerNum)
-            currGame.turns = playerNum
+            # print(playerNum)
+            currGame.turns = 1
             # Player number has to be offset because of how arrays start!!!
 
             # print(initializeCards)
             for idx,client in enumerate(clients):
                 initializeCards = currGame.players[idx].cards
-                send_individual_message(client_num=idx,message={"playerNum": idx, "startGame": True, "playerCards": initializeCards, "otherCards": currGame.cardLengths ,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": True})
+                send_individual_message(client_num=idx,message={"playerNum": idx, "startGame": True, "playerCards": initializeCards, "otherCards": currGame.cardLengths ,"lastPlayedCard": currGame.lastCardPlayed ,"isGameRunning": True, "turns": currGame.turns})
             
             time.sleep(1)
             start = 1
@@ -113,11 +113,11 @@ def handle_client(conn, addr, client):
             
             ## IN GAME 
             if start == 1 and currGame.gameStart == True:
-                client_num = client['client_num'] + 1
-                print(client_num)
+                # client_num = client['client_num'] + 1
+                # print(client_num)
 
                 with lock:
-                    broadcast_message({"currentPlayerTurn": client_num})
+                    # broadcast_message({"currentPlayerTurn": client_num})
                     if (token == "UNO"):
                         playerNum = data.get("playerNum")
                         uno = currGame.checkUno()
@@ -130,7 +130,7 @@ def handle_client(conn, addr, client):
                             broadcast_message({"playerNum": playerNum, "drawnCard": card})                   
 
                     if currGame.turns != client_num:
-                        print("client_num" + str(client_num) + " currGame.turns: " + str(currGame.turns))
+                        # print("client_num" + str(client_num) + " currGame.turns: " + str(currGame.turns))
                         ## sents a message only to that socket if it is not their turn
                         message = "It's not your turn!\n"
                         client_socket.sendall(pickle.dumps({"message": message}))
@@ -143,7 +143,7 @@ def handle_client(conn, addr, client):
 
                         if (token=="PLACE"):
                             print("IN PLACE")
-                            turn_taken=1
+                            
                             playerNum = data.get("playerNum")
                             cardIdx = data.get("cardIdx")
                             print("cardIdx", cardIdx)
@@ -160,6 +160,9 @@ def handle_client(conn, addr, client):
                                     currGame.gameStart = False
                                     start = 0
                                     broadcast_message({"winner": winner,  "isGameRunning": False})
+                                    
+                                turn_taken=1
+
 
                         if(token == "DRAW"):
                             turn_taken=1
@@ -178,11 +181,16 @@ def handle_client(conn, addr, client):
                             
                                 
                 if turn_taken == 1:
-                    
+                    print('in turns taken')
+                    print(currGame.turns)
+                    print("hi")
+                    print(len(client))
                     with lock:
                     
                         if currGame.turns == len(clients):
                             currGame.turns = 1
+                            print('if equal')
+                            print(currGame.turns)
                         else:
                             currGame.turns = currGame.turns + 1
                             print("currGame.turns", currGame.turns)
